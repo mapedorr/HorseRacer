@@ -18,7 +18,7 @@ HorseRacer.Preloader.prototype.preload = function(){
 
   //[Start screen]
   this.load.image('start_screen', 'assets/images/start_screen.png');
-  this.load.spritesheet('playButton','assets/sprites/play_button.png',400,128);
+  this.load.spritesheet('playButton','assets/sprites/play_button.png', 400, 128);
 
   //[Main menu]
   this.load.image('horse01_thumb', 'assets/images/big_horse01_thumb.png');//#e55b4c
@@ -32,6 +32,7 @@ HorseRacer.Preloader.prototype.preload = function(){
   this.load.image('horseRocky', 'assets/images/horse02.png');
   this.load.image('horseYegua', 'assets/images/horse03.png');
   this.load.image('horseViejo', 'assets/images/horse04.png');
+  this.load.spritesheet('runButton','assets/sprites/run_button.png', 400, 128);
 };
 
 HorseRacer.Preloader.prototype.create = function(){

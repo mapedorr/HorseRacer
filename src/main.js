@@ -1,6 +1,6 @@
 window.onload = function () {
-  var height = window.innerHeight;
-  var width = window.innerWidth;
+  var height = 480;
+  var width = 320;
   // var game = new Phaser.Game(height*4/3, height, Phaser.AUTO);
   var game = new Phaser.Game(width, height, Phaser.AUTO);
   
