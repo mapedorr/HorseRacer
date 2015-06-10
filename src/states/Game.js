@@ -124,7 +124,10 @@ HorseRacer.Game.prototype.secondPassed = function(){
 
   this.runButton.y = this.runButton.originalY;
 
-  if(this.timerSprite.y >= this.game.world.height){
+  if(this.timerSprite.y + 22.4 >= this.game.world.height){
+    if(this.horsesRunning === false){
+      this.runHorse();
+    }
     this.questionTimer.stop(false);
     return;
   }
