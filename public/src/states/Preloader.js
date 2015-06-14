@@ -16,15 +16,18 @@ HorseRacer.Preloader.prototype.preload = function(){
   this.loadingBar.height = loadingBarHeight;
   this.load.setPreloadSprite(this.loadingBar);
 
+  //[Font]
+  this.load.bitmapFont('font','assets/fonts/carrier_command.png','assets/fonts/carrier_command.xml');
+
   //[Start screen]
   this.load.image('start_screen', 'assets/images/start_screen.png');
   this.load.spritesheet('playButton','assets/sprites/play_button.png', 400, 128);
 
   //[Main menu]
-  this.load.image('horse01_thumb', 'assets/images/big_horse01_thumb.png');//#e55b4c
-  this.load.image('horse02_thumb', 'assets/images/big_horse02_thumb.png');//#29d7cd
-  this.load.image('horse03_thumb', 'assets/images/big_horse03_thumb.png');//#95c93a
-  this.load.image('horse04_thumb', 'assets/images/big_horse04_thumb.png');//#e54cd1
+  this.load.spritesheet('horse01_thumb', 'assets/sprites/amateur_horsepick.png', 160, 240);//#e55b4c
+  this.load.spritesheet('horse02_thumb', 'assets/sprites/rocky_horsepick.png', 160, 240);//#29d7cd
+  this.load.spritesheet('horse03_thumb', 'assets/sprites/yegua_horsepick.png', 160, 240);//#95c93a
+  this.load.spritesheet('horse04_thumb', 'assets/sprites/viejo_horsepick.png', 160, 240);//#e54cd1
 
   //[Game]
   this.load.image('race_track', 'assets/images/race_track.png');

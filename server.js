@@ -9,6 +9,7 @@ var io = require('socket.io')(http);
 var Game = require("./Game").Game;
 var Player = require("./Player").Player;
 var players;
+var games = [];
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -18,12 +19,35 @@ app.get('/', function(req, res){
 
 //Function executed when a player clicks the "PLAY" button on the main screen.
 io.on('connection', function(socket){
+  var playerAdded = games[0].addPlayer(socket);
+  if(playerAdded){
+    var _selectedHorses = games[0].getSelectedHorses();
+
+    // for (var i = 0; i < players.length - 1; i++) {
+    //   _selectedHorses += players[i].getHorseName();
+    //   if(i < players.length - 2){
+    //     _selectedHorses+=",";
+    //   }
+    // };
+
+    console.log("Selected horses: ", _selectedHorses);
+    this.emit("player connected", {selectedHorses: _selectedHorses, playerName: playerAdded.name});
+
+  }else{
+    //TODO: Put the player in a new game!!!
+  }
+
+  console.log("USING THE NEW ONES");
+  return;
+
+
   players = players || [];
   if(players.length > 3){
-    //TODO: Put the player in a new game!!!
+    
     console.log("Max players limit reached");
     return;
   }
+
   var newPlayer = new Player(socket.id);
   players.push(newPlayer);
   console.log("New player is picking a horse: " + socket.id);
@@ -121,6 +145,7 @@ function getPlayerById(id) {
 };
 
 http.listen(3000, function(){
+  games.push(new Game(games.length + 1));
   console.log('listening on *:3000');
 });
 

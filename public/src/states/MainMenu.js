@@ -3,6 +3,12 @@ var HorseRacer = HorseRacer || {};
 HorseRacer.MainMenu = function(game){
   this.horsesGroup = null;
   this.pickedHorse = null;
+  this.playerName = null;
+  this.fontSize = 15;
+  this.fontId = 'font';
+  this.textBitmapsGroup = null;
+  this.playerNameTextBitmap = null;
+  this.playerHorseTextBitmap = null;
   coco = this;
 };
 
@@ -23,26 +29,30 @@ HorseRacer.MainMenu.prototype.create = function(){
   var horseThumb = null;
 
   //Add the first horse
-  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos, initialYPos, 'horse01_thumb'));
+  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos, initialYPos, 'horse01_thumb', 0));
   horseThumb.horseId = 1;
+  horseThumb.horseName = "Amateur";
   horseThumb.inputEnabled = true;
   horseThumb.input.useHandCursor = true;
   horseThumb.events.onInputDown.add(this.pickHorse, this);
 
-  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos + 160, initialYPos, 'horse02_thumb'));
+  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos + 160, initialYPos, 'horse02_thumb', 0));
   horseThumb.horseId = 2;
+  horseThumb.horseName = "Rocky";
   horseThumb.inputEnabled = true;
   horseThumb.input.useHandCursor = true;
   horseThumb.events.onInputDown.add(this.pickHorse, this);
 
-  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos, initialYPos + 240, 'horse03_thumb'));
+  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos, initialYPos + 240, 'horse03_thumb', 0));
   horseThumb.horseId = 3;
+  horseThumb.horseName = "Yegua";
   horseThumb.inputEnabled = true;
   horseThumb.input.useHandCursor = true;
   horseThumb.events.onInputDown.add(this.pickHorse, this);
 
-  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos + 160, initialYPos + 240, 'horse04_thumb'));
+  horseThumb = this.horsesGroup.add(this.game.add.sprite(initialXPos + 160, initialYPos + 240, 'horse04_thumb', 0));
   horseThumb.horseId = 4;
+  horseThumb.horseName = "Viejo";
   horseThumb.inputEnabled = true;
   horseThumb.input.useHandCursor = true;
   horseThumb.events.onInputDown.add(this.pickHorse, this);
@@ -62,8 +72,10 @@ HorseRacer.MainMenu.prototype.update = function(){
  * @return {[type]} [description]
  */
 HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
+  this.showPlayerName(spriteObj);
   this.pickedHorse = spriteObj.horseId;
-  spriteObj.alpha = 0.5;
+  this._setDisable(spriteObj, spriteObj.horseId);
+
   socket.emit("horse selected", {name: this.pickedHorse});
 
   //Start the game
@@ -93,9 +105,44 @@ HorseRacer.MainMenu.prototype.disableHorse = function(_horseId){
 
 HorseRacer.MainMenu.prototype._setDisable = function(spriteObj, id){
   if(spriteObj.horseId == id){
-    spriteObj.alpha = 0.5;
+    spriteObj.frame = 1;
+    spriteObj.inputEnabled = true;
+    spriteObj.input.useHandCursor = true;
   }
 };
+
+HorseRacer.MainMenu.prototype.setPlayerName = function(_playerName){
+  this.playerName = _playerName;
+};
+
+HorseRacer.MainMenu.prototype.showPlayerName = function(spriteObj){
+  //Create the group for the texts
+  this.textBitmapsGroup = this.game.make.group();
+
+  //Draw the player name
+  this.playerNameTextBitmap = this.game.make.bitmapText(spriteObj.width / 2, 16, this.fontId, this.playerName, 12);
+  this.playerNameTextBitmap.anchor.set(0.5, 0.5);
+  this.playerNameTextBitmap.align = "center";
+  this.playerNameTextBitmap.tint = 0xfafafa;
+
+  //Draw the funny text
+  this.playerHorseTextBitmap = this.game.make.bitmapText(spriteObj.width / 2, 40, this.fontId, "es " + spriteObj.horseName, 10);
+  this.playerHorseTextBitmap.anchor.set(0.5, 0.5);
+  this.playerHorseTextBitmap.align = "center";
+  this.playerHorseTextBitmap.tint = 0xe5e5e5;
+
+  this.textBitmapsGroup.add(this.playerNameTextBitmap);
+  this.textBitmapsGroup.add(this.playerHorseTextBitmap);
+
+  spriteObj.addChild(this.textBitmapsGroup);
+};
+
+
+
+
+
+
+
 
 // Socket connected
 function onPlayerConnected(data) {
@@ -109,6 +156,10 @@ function onPlayerConnected(data) {
         coco.disableHorse(selectedHorses[i]);
       };
     }
+
+    //Show the name the server give me
+    coco.setPlayerName(data.playerName[0]);
+
 
     // Send local player data to the game server
     // socket.emit("new player", {x: player.x, y:player.y});
