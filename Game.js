@@ -3,7 +3,7 @@
 **************************************************/
 var Player = require("./Player").Player;
 
-var Game = function(_gameId){
+var Game = function(_gameId, io){
   var gameId = _gameId;
   var GAME_STATES = {
     CREATED: 'c',
@@ -15,6 +15,7 @@ var Game = function(_gameId){
   var currentState = GAME_STATES.CREATED;
   var playerNames = ["Naked Snake", "Venom Snake", "Major Tom", "Major Zero", "Solid Snake", "Eva", "The Pain", "The Fear", "The End", "The Fury", "The Sorrow", "The Joy", "The Boss", "Big Boss", "Sniper Wolf", "Crying Wolf", "Raiden", "Vamp", "Gray Fox"];
   var players = null;
+  var io = io;
 
   /**
    * Method that adds a player to the game.
@@ -34,7 +35,7 @@ var Game = function(_gameId){
       }
       //Pick a random name for the player
       var playerName = playerNames.splice(parseInt(Math.random() * playerNames.length), 1);
-      var newPlayer = new Player(socketObj.id, playerName, socketObj);
+      var newPlayer = new Player(socketObj.id, playerName, socketObj, this);
       players.push(newPlayer);
 
       // Listen for new player message
@@ -44,7 +45,9 @@ var Game = function(_gameId){
       socketObj.on("disconnect", newPlayer.onClientDisconnect);
       return {name: newPlayer.getName()};
     }else{
-      console.log("Maximum players limit reached in game: ", this.gameId);
+      currentState = GAME_STATES.STARTED;
+      //  console.log("Maximum players limit reached in game: ", this.gameId);
+      
       return null;
     }
   };
@@ -69,9 +72,18 @@ var Game = function(_gameId){
     return false;
   };
 
+  var _playerSelectHorse = function(playerSocket){
+    if(players.length === 4){
+      //Notify to the players that the game have to start
+      currentState = GAME_STATES.STARTED;
+      io.sockets.emit("start race");
+    }
+  };
+
   return {
     addPlayer: _addPlayer,
-    getConnectedPlayers: _getConnectedPlayers
+    getConnectedPlayers: _getConnectedPlayers,
+    playerSelectHorse: _playerSelectHorse
   };
 
 };

@@ -24,10 +24,11 @@ io.on('connection', function(socket){
     this.emit("player connected", {connectedPlayers: _connectedPlayers, playerName: playerAdded.name});
   }else{
     //TODO: Put the player in a new game!!!
+    
   }
 });
 
 http.listen(3000, function(){
-  games.push(new Game(games.length + 1));
+  games.push(new Game(games.length + 1, io));
   console.log('listening on *:3000');
 });

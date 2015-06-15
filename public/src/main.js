@@ -1,5 +1,4 @@
 var socket = null;
-var coco = null;
 
 window.onload = function () {
   var height = 480;

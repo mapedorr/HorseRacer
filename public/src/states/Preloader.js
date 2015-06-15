@@ -24,10 +24,10 @@ HorseRacer.Preloader.prototype.preload = function(){
   this.load.spritesheet('playButton','assets/sprites/play_button.png', 400, 128);
 
   //[Main menu]
-  this.load.spritesheet('horse01_thumb', 'assets/sprites/amateur_horsepick.png', 160, 240);//#e55b4c
-  this.load.spritesheet('horse02_thumb', 'assets/sprites/rocky_horsepick.png', 160, 240);//#29d7cd
-  this.load.spritesheet('horse03_thumb', 'assets/sprites/yegua_horsepick.png', 160, 240);//#95c93a
-  this.load.spritesheet('horse04_thumb', 'assets/sprites/viejo_horsepick.png', 160, 240);//#e54cd1
+  this.load.spritesheet('horse01_thumb', 'assets/sprites/amateur_horsepick.png', 160, 240);   //#e55b4c
+  this.load.spritesheet('horse02_thumb', 'assets/sprites/rocky_horsepick.png', 160, 240);     //#29d7cd
+  this.load.spritesheet('horse03_thumb', 'assets/sprites/yegua_horsepick.png', 160, 240);     //#95c93a
+  this.load.spritesheet('horse04_thumb', 'assets/sprites/viejo_horsepick.png', 160, 240);   //#e54cd1
 
   //[Game]
   this.load.image('race_track', 'assets/images/race_track.png');

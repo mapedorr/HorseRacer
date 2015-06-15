@@ -10,7 +10,6 @@ HorseRacer.MainMenu = function(game){
   this.playerNameTextBitmap = null;
   this.playerHorseTextBitmap = null;
   this.enabledHorses = [];
-  coco = this;
 };
 
 HorseRacer.MainMenu.prototype.preload = function(){
@@ -20,7 +19,7 @@ HorseRacer.MainMenu.prototype.create = function(){
   //Initiate the socket connection to the server.
   socket = io();
 
-  // @TODO Add the elements to show in the main menu screen ("Pick a horse!" screen)
+  //@TODO Add the elements to show in the main menu screen ("Pick a horse!" screen)
   this.horsesGroup = this.game.add.group(undefined, "horse_pick");
 
   //Each horse thumb is 160 x 240
@@ -67,7 +66,7 @@ HorseRacer.MainMenu.prototype.create = function(){
 };
 
 HorseRacer.MainMenu.prototype.update = function(){
-  // @TODO
+  //@TODO
 };
 
 /**
@@ -79,7 +78,7 @@ HorseRacer.MainMenu.prototype.update = function(){
 HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
   this.pickedHorse = spriteObj.horseId;
   //Disable the picked horse
-  this._setDisable(spriteObj, {horseId: spriteObj.horseId, name: this.playerName});
+  this._setDisabled(spriteObj, {horseId: spriteObj.horseId, name: this.playerName});
 
   //Disable the remaining horses
   this.enabledHorses.splice(this.enabledHorses.indexOf(spriteObj.horseId), 1);
@@ -88,38 +87,72 @@ HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
   };
 
   socket.emit("horse selected", {name: this.pickedHorse});
-
-  //Start the game
-  //  this.state.start('Game', true, false, this.pickedHorse);
 };
 
 HorseRacer.MainMenu.prototype.setEventHandlers = function(){
-  // Socket connection successful
-  socket.on("player connected", onPlayerConnected);
+  var _me = this;
+
+  //Socket connection successful
+  //  socket.on("player connected", onPlayerConnected);
+  socket.on("player connected", function(data){
+    _me.playerConnected(data);
+  });
   
-  // Socket disconnection
-  socket.on("disconnect", onDisconnect);
+  //Socket disconnection
+  socket.on("disconnect", function(){
+    _me.playerDisconnected();
+  });
   
-  // New player message received
-  socket.on("opponent horse selected", onOpponentHorseSelected);
-  
-  // Player move message received
-  // socket.on("move player", onMovePlayer);
-  
-  // Player removed message received
-  // socket.on("remove player", onRemovePlayer);
+  //New player message received
+  socket.on("opponent horse selected", function(data){
+    _me.opponentHorseSelected(data);
+  });
+
+  //All players had selected their horses. Start the race.
+  socket.on("start race", function(){
+    _me.startRace();
+  });
+};
+
+//Socket connected
+HorseRacer.MainMenu.prototype.playerConnected = function(data) {
+    //Lock the selected horses and show the name of all the players
+    if(data.connectedPlayers){
+      for (var i = 0; i < data.connectedPlayers.length; i++) {
+        this.enabledHorses.splice(this.enabledHorses.indexOf(data.connectedPlayers[i].horseId), 1);
+        this.disableHorse(data.connectedPlayers[i]);
+      };
+    }
+
+    //Show the name the server give me
+    this.setPlayerName(data.playerName[0]);
+};
+
+//Socket disconnected
+HorseRacer.MainMenu.prototype.playerDisconnected = function() {
+    console.log("Disconnected from socket server");
+};
+
+//New player
+HorseRacer.MainMenu.prototype.opponentHorseSelected = function(data) {
+    this.disableHorse(data);
+};
+
+HorseRacer.MainMenu.prototype.startRace = function(opponentObj){
+  this.state.start('Game', true, false, this.pickedHorse);
 };
 
 HorseRacer.MainMenu.prototype.disableHorse = function(opponentObj){
-  this.horsesGroup.forEach(this._setDisable, this, true, opponentObj);
+  this.horsesGroup.forEach(this._setDisabled, this, true, opponentObj);
 };
 
-HorseRacer.MainMenu.prototype._setDisable = function(spriteObj, data){
+HorseRacer.MainMenu.prototype._setDisabled = function(spriteObj, data){
   if(spriteObj.horseId == data.horseId){
     spriteObj.frame = 1;
     spriteObj.inputEnabled = false;
     spriteObj.input.useHandCursor = false;
     if(data.name){
+      spriteObj.frame = 2;
       this.showPlayerName(spriteObj, data.name);
     }
   }
@@ -151,96 +184,5 @@ HorseRacer.MainMenu.prototype.showPlayerName = function(spriteObj, name){
   spriteObj.addChild(this.textBitmapsGroup);
 };
 
-
-
-
-
-
-
-
-// Socket connected
-function onPlayerConnected(data) {
-    //Lock the selected horses and show the name of all the players
-    console.log("data.connectedPlayers", data.connectedPlayers);
-    if(data.connectedPlayers){
-      for (var i = 0; i < data.connectedPlayers.length; i++) {
-        coco.disableHorse(data.connectedPlayers[i]);
-      };
-    }
-
-    //Show the name the server give me
-    coco.setPlayerName(data.playerName[0]);
-
-    return;
-
-
-
-
-
-    if(data.selectedHorses){
-      var selectedHorses = data.selectedHorses.split(",");
-      for (var i = 0; i < selectedHorses.length; i++) {
-        coco.disableHorse(selectedHorses[i]);
-      };
-    }
-
-
-    // Send local player data to the game server
-    // socket.emit("new player", {x: player.x, y:player.y});
-};
-
-// Socket disconnected
-function onDisconnect() {
-    console.log("Disconnected from socket server");
-};
-
-// New player
-function onOpponentHorseSelected(data) {
-    console.log("New player connected: "+data.horseName);
-    coco.disableHorse(data);
-
-    // Add new player to the remote players array
-    //  enemies.push(new RemotePlayer(data.id, game, player, data.x, data.y));
-};
-
-/*// Move player
-function onMovePlayer(data) {
-    
-    var movePlayer = playerById(data.id);
-    // Player not found
-    if (!movePlayer) {
-        console.log("Player not found: "+data.id);
-        return;
-    };
-    // Update player position
-    movePlayer.player.x = data.x;
-    movePlayer.player.y = data.y;
-    
-};
-
-// Remove player
-function onRemovePlayer(data) {
-    var removePlayer = playerById(data.id);
-    // Player not found
-    if (!removePlayer) {
-        console.log("Player not found: "+data.id);
-        return;
-    };
-    removePlayer.player.kill();
-    // Remove player from array
-    enemies.splice(enemies.indexOf(removePlayer), 1);
-};*/
-
 function render () {
 }
-
-// Find player by ID
-function playerById(id) {
-    var i;
-    for (i = 0; i < enemies.length; i++) {
-        if (enemies[i].player.name == id)
-            return enemies[i];
-    };
-    
-    return false;
-};

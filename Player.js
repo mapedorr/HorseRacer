@@ -1,11 +1,12 @@
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
-var Player = function(playerId, playerName, playerSocket) {
+var Player = function(playerId, playerName, playerSocket, hostGame) {
   var id = playerId;
   var name = playerName;
   var socket = playerSocket;
   var horseName = "";
+  var hostGame = hostGame;
 
   //-----------------------
   //Getters and setters
@@ -31,13 +32,14 @@ var Player = function(playerId, playerName, playerSocket) {
   // New player has joined
   var _onHorseSelected = function(data) {
     _setHorseName(data.name);
-
     //Broadcast selected horse to connected sockets
-    //  socket.broadcast.emit("opponent horse selected", {horseName: data.name});
     socket.broadcast.emit("opponent horse selected", {
       horseId: horseName,
       name: name[0]
     });
+
+    //Notify to the host game that the player has selected its horse
+    hostGame.playerSelectHorse(socket);
   };
 
   // Socket client has disconnected
