@@ -36,29 +36,28 @@ var Game = function(_gameId){
       var playerName = playerNames.splice(parseInt(Math.random() * playerNames.length), 1);
       var newPlayer = new Player(socketObj.id, playerName, socketObj);
       players.push(newPlayer);
-      console.log("New player is picking a horse: " + socketObj.id, "\nIt's name will be: " + playerName);
 
       // Listen for new player message
       socketObj.on("horse selected", newPlayer.onHorseSelected);
 
       // Listen for client disconnected
       socketObj.on("disconnect", newPlayer.onClientDisconnect);
-      return {name: playerName};
+      return {name: newPlayer.getName()};
     }else{
       console.log("Maximum players limit reached in game: ", this.gameId);
       return null;
     }
   };
 
-  var _getSelectedHorses = function(){
-    var selectedHorses = "";
+  var _getConnectedPlayers = function(){
+    var connectedPlayers = [];
     for (var i = 0; i < players.length - 1; i++) {
-      selectedHorses += players[i].getHorseName();
-      if(i < players.length - 2){
-        selectedHorses+=",";
-      }
+      connectedPlayers.push({
+        horseId: players[i].getHorseName(),
+        name: (players[i].getName())[0]
+      });
     };
-    return selectedHorses;
+    return connectedPlayers;
   };
 
   var _getPlayerById = function(id) {
@@ -72,7 +71,7 @@ var Game = function(_gameId){
 
   return {
     addPlayer: _addPlayer,
-    getSelectedHorses: _getSelectedHorses
+    getConnectedPlayers: _getConnectedPlayers
   };
 
 };

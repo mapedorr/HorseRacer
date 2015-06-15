@@ -7,7 +7,8 @@ var Player = function(playerId, playerName, playerSocket) {
   var socket = playerSocket;
   var horseName = "";
 
-  // Getters and setters
+  //-----------------------
+  //Getters and setters
   var _getHorseName = function() {
     return horseName;
   };
@@ -16,12 +17,27 @@ var Player = function(playerId, playerName, playerSocket) {
     horseName = _horseName;
   };
 
+  var _getName = function() {
+    return name;
+  };
+
+  var _setName = function(_name) {
+    name = _name;
+  };
+
+  //-----------------------
+  //Communication
+
   // New player has joined
   var _onHorseSelected = function(data) {
     _setHorseName(data.name);
 
     //Broadcast selected horse to connected sockets
-    socket.broadcast.emit("opponent horse selected", {horseName: data.name});
+    //  socket.broadcast.emit("opponent horse selected", {horseName: data.name});
+    socket.broadcast.emit("opponent horse selected", {
+      horseId: horseName,
+      name: name[0]
+    });
   };
 
   // Socket client has disconnected
@@ -33,6 +49,8 @@ var Player = function(playerId, playerName, playerSocket) {
   return {
     getHorseName: _getHorseName,
     setHorseName: _setHorseName,
+    getName: _getName,
+    setName: _setName,
     id: id,
     onHorseSelected: _onHorseSelected,
     onClientDisconnect: _onClientDisconnect
