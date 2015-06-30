@@ -3,6 +3,9 @@ var HorseRacer = HorseRacer || {};
 HorseRacer.Game = function(game){
   this.playerHorseId = null;
   this.playerHorse = null;
+  this.socket = null;
+  this.gamePlayers = null;
+
   this.horseNames = ["Amateur", "Rocky", "Yegua", "Viejo"];
   this.enemyHorses = [];
   this.horsesGroup = null;
@@ -16,8 +19,16 @@ HorseRacer.Game = function(game){
   this.runButton = null;
 };
 
-HorseRacer.Game.prototype.init = function(pickedHorseKey){
+HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
+  var _me = this;
+  this.gamePlayers = gamePlayers;
   this.playerHorseId = pickedHorseKey;
+  this.socket = socket;
+
+  //  this.socket.on("player connected", onPlayerConnected);
+  this.socket.on("move opponent", function(data){
+    _me.moveOpponentHorse(data.horseId);
+  });
 };
 
 HorseRacer.Game.prototype.preload = function(){
@@ -39,17 +50,16 @@ HorseRacer.Game.prototype.create = function(){
   //Add the horses in order of selection
   this.horsesGroup = this.game.add.group(undefined, "horses");
 
-  this.playerHorse = this.game.add.sprite(initialXPos, trackHeight - horseHeight, 'horse' + this.horseNames[this.playerHorseId - 1]);
-  this.horsesGroup.add(this.playerHorse);
-  this.horseNames.splice(this.playerHorseId - 1, 1);
-
-  //Add the other horses
-  this.horseNames.forEach(function(horseName, index){
-    var enemyHorse = _me.game.add.sprite(initialXPos, trackHeight*(index + 2) + ( 16 * (index+1) ) - horseHeight, 'horse' + _me.horseNames[index]);
-    _me.enemyHorses.push(enemyHorse);
-    _me.horsesGroup.add(enemyHorse);
-    _me.horseNames.splice(index, 0);
-  });
+  for (var i = 0; i < this.gamePlayers.length; i++) {
+    var horse = this.game.add.sprite(initialXPos, (trackHeight * (i+1)) + (16*i) - horseHeight, 'horse' + this.horseNames[this.gamePlayers[i].playerHorse - 1]);
+    horse.horseId = this.gamePlayers[i].playerHorse;
+    if(this.gamePlayers[i].playerHorse == this.playerHorseId){
+      this.playerHorse = horse;
+    }else{
+      this.enemyHorses.push(horse);
+    }
+    this.horsesGroup.add(horse);
+  };
 
   //Add the button for making the horse run
   this.runButton = this.game.add.button(this.world.width / 2, 
@@ -92,7 +102,9 @@ HorseRacer.Game.prototype.runHorse = function(){
   var _me = this;
   this.questionTimer.stop(false);
   this.runButton.y += 1000;
-  this.movedHorses = 0;
+
+  //Notify to the server that my horse is going to move
+  this.socket.emit("move horse", {horseId: this.playerHorseId});
 
   //Move the player's horse
   this.game.add.tween(this.playerHorse).to(
@@ -105,7 +117,7 @@ HorseRacer.Game.prototype.runHorse = function(){
     false
   ).onComplete.add(this.horseMoved, this);
 
-  this.enemyHorses.forEach(function(horseSprite){
+  /*this.enemyHorses.forEach(function(horseSprite){
     _me.game.add.tween(horseSprite).to(
       {x: horseSprite.x + Math.ceil(Math.random() * 15)},
       1000,
@@ -115,9 +127,26 @@ HorseRacer.Game.prototype.runHorse = function(){
       0,
       false
     ).onComplete.add(_me.horseMoved, _me);
-  });
+  });*/
 
   this.horsesRunning = true;
+};
+
+HorseRacer.Game.prototype.moveOpponentHorse = function(horseId){
+  for (var i = 0; i < this.enemyHorses.length; i++) {
+    if(this.enemyHorses[i].horseId == horseId){
+      this.game.add.tween(this.enemyHorses[i]).to(
+        {x: this.enemyHorses[i].x + 15},
+        1000,
+        Phaser.Easing.Linear.None,
+        true,
+        0,
+        0,
+        false
+      ).onComplete.add(this.horseMoved, this);
+      break;
+    }
+  };
 };
 
 HorseRacer.Game.prototype.secondPassed = function(){
@@ -148,6 +177,7 @@ HorseRacer.Game.prototype.horseMoved = function(){
   this.movedHorses++;
 
   if(this.movedHorses >= 4){
+    this.movedHorses = 0;
     this.timerSprite.y = this.timerSprite.originalY;
     this.horsesRunning = false;
     this.questionTimer.start();

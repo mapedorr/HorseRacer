@@ -43,6 +43,10 @@ var Game = function(_gameId, io){
 
       // Listen for client disconnected
       socketObj.on("disconnect", newPlayer.onClientDisconnect);
+
+      // Listen for player movement
+      socketObj.on("move horse", newPlayer.onMoveHorse);
+
       return {name: newPlayer.getName()};
     }else{
       currentState = GAME_STATES.STARTED;
@@ -76,7 +80,15 @@ var Game = function(_gameId, io){
     if(players.length === 4){
       //Notify to the players that the game have to start
       currentState = GAME_STATES.STARTED;
-      io.sockets.emit("start race");
+      var playersData = [];
+      for (var i = 0; i < players.length; i++) {
+        playersData.push({
+          playerName: (players[i].getName())[0],
+          playerHorse: players[i].getHorseName()
+        });
+      };
+      console.log("playersData", playersData);
+      io.sockets.emit("start race", {gamePlayers: playersData});
     }
   };
 

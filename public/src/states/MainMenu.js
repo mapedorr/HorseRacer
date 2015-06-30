@@ -10,6 +10,7 @@ HorseRacer.MainMenu = function(game){
   this.playerNameTextBitmap = null;
   this.playerHorseTextBitmap = null;
   this.enabledHorses = [];
+  this.socket = null;
 };
 
 HorseRacer.MainMenu.prototype.preload = function(){
@@ -17,7 +18,7 @@ HorseRacer.MainMenu.prototype.preload = function(){
 
 HorseRacer.MainMenu.prototype.create = function(){
   //Initiate the socket connection to the server.
-  socket = io();
+  this.socket = io();
 
   //@TODO Add the elements to show in the main menu screen ("Pick a horse!" screen)
   this.horsesGroup = this.game.add.group(undefined, "horse_pick");
@@ -86,31 +87,35 @@ HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
     this.disableHorse({horseId: this.enabledHorses[i]});
   };
 
-  socket.emit("horse selected", {name: this.pickedHorse});
+  this.socket.emit("horse selected", {name: this.pickedHorse});
 };
 
 HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   var _me = this;
 
   //Socket connection successful
-  //  socket.on("player connected", onPlayerConnected);
-  socket.on("player connected", function(data){
+  //  this.socket.on("player connected", onPlayerConnected);
+  this.socket.on("player connected", function(data){
     _me.playerConnected(data);
   });
   
   //Socket disconnection
-  socket.on("disconnect", function(){
+  this.socket.on("disconnect", function(){
     _me.playerDisconnected();
   });
   
   //New player message received
-  socket.on("opponent horse selected", function(data){
+  this.socket.on("opponent horse selected", function(data){
     _me.opponentHorseSelected(data);
   });
 
   //All players had selected their horses. Start the race.
-  socket.on("start race", function(){
-    _me.startRace();
+  this.socket.on("start race", function(data){
+    //The "data" object received from the server has the information of the players and
+    //will be used for drawing their horses in the order of connection to the game
+    if(data && data.gamePlayers){
+      _me.startRace(data.gamePlayers);
+    }
   });
 };
 
@@ -138,8 +143,9 @@ HorseRacer.MainMenu.prototype.opponentHorseSelected = function(data) {
     this.disableHorse(data);
 };
 
-HorseRacer.MainMenu.prototype.startRace = function(opponentObj){
-  this.state.start('Game', true, false, this.pickedHorse);
+HorseRacer.MainMenu.prototype.startRace = function(gamePlayers){
+  console.log("gamePlayers", gamePlayers);
+  this.state.start('Game', true, false, gamePlayers, this.pickedHorse, this.socket);
 };
 
 HorseRacer.MainMenu.prototype.disableHorse = function(opponentObj){

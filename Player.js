@@ -43,8 +43,14 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
   };
 
   // Socket client has disconnected
-  function _onClientDisconnect() {
+  var _onClientDisconnect = function() {
     console.log("Player has disconnected: " + id);
+  };
+
+  //My horse is moving, notify this to all
+  var _onMoveHorse = function(){
+    //Broadcast moved horse to connected sockets
+    socket.broadcast.emit("move opponent", {horseId: horseName});
   };
 
   // Define which variables and methods can be accessed
@@ -55,7 +61,8 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     setName: _setName,
     id: id,
     onHorseSelected: _onHorseSelected,
-    onClientDisconnect: _onClientDisconnect
+    onClientDisconnect: _onClientDisconnect,
+    onMoveHorse: _onMoveHorse
   }
 
 };
