@@ -47,10 +47,19 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     console.log("Player has disconnected: " + id);
   };
 
-  //My horse is moving, notify this to all
-  var _onMoveHorse = function(){
-    //Broadcast moved horse to connected sockets
-    socket.broadcast.emit("move opponent", {horseId: horseName});
+  // answered the question, notify this to all
+  var _onAnswerQuestion = function(data){
+    // broadcast moved horse to connected sockets
+    var movementDistance = 0;
+    var responseTime = data.responseTime;
+    if(responseTime){
+      // the player has responded
+      movementDistance = 15+30000/responseTime;
+      console.log(name + " will move >> " + movementDistance);
+    }
+
+    socket.emit("move horse", {amount: movementDistance});
+    socket.broadcast.emit("move opponent", {horseId: horseName, amount: movementDistance});
   };
 
   // Define which variables and methods can be accessed
@@ -62,7 +71,7 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     id: id,
     onHorseSelected: _onHorseSelected,
     onClientDisconnect: _onClientDisconnect,
-    onMoveHorse: _onMoveHorse
+    onAnswerQuestion: _onAnswerQuestion
   }
 
 };

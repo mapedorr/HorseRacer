@@ -24,7 +24,6 @@ io.on('connection', function(socket){
     this.emit("player connected", {connectedPlayers: _connectedPlayers, playerName: playerAdded.name});
   }else{
     //TODO: Put the player in a new game!!!
-    
   }
 });
 

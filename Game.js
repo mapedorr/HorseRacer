@@ -44,8 +44,8 @@ var Game = function(_gameId, io){
       // Listen for client disconnected
       socketObj.on("disconnect", newPlayer.onClientDisconnect);
 
-      // Listen for player movement
-      socketObj.on("move horse", newPlayer.onMoveHorse);
+      // Listen for player answer
+      socketObj.on("answer question", newPlayer.onAnswerQuestion);
 
       return {name: newPlayer.getName()};
     }else{
@@ -87,9 +87,12 @@ var Game = function(_gameId, io){
           playerHorse: players[i].getHorseName()
         });
       };
-      console.log("playersData", playersData);
       io.sockets.emit("start race", {gamePlayers: playersData});
     }
+  };
+
+  var _calculateHorseMovement = function(responseTime){
+    return 1;
   };
 
   return {
