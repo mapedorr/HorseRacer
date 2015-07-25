@@ -2,7 +2,7 @@
   "name": "WhoIsTheDonkey",
   "version": "0.0.2",
   "description": "A Horse Racer with questions.",
-  "main": "game.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
