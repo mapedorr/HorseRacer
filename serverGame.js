@@ -1,7 +1,8 @@
 /**************************************************
 ** GAME CLASS
 **************************************************/
-var Player = require("./Player").Player;
+var Player = require("./serverPlayer").Player;
+var Questions = require("./questions").Questions;
 
 var Game = function(_gameId, io){
   var gameId = _gameId;
@@ -93,6 +94,15 @@ var Game = function(_gameId, io){
 
   var _calculateHorseMovement = function(responseTime){
     return 1;
+  };
+
+  /**
+   * This function gets a question from the array of questions and returns it
+   * ready for its use in the game.
+   * @return {[type]} [description]
+   */
+  var _getRandomQuestion = function(){
+
   };
 
   return {
