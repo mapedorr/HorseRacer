@@ -52,10 +52,12 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     // broadcast moved horse to connected sockets
     var movementDistance = 0;
     var responseTime = data.responseTime;
-    if(responseTime){
+    var response = data.response;
+    if(response && responseTime){
       // the player has responded
-      movementDistance = 15+30000/responseTime;
-      console.log(name + " will move >> " + movementDistance);
+      if(hostGame.verifyResponse(response) === true){
+        movementDistance = 15+30000/responseTime;
+      }
     }
 
     socket.emit("move horse", {amount: movementDistance});

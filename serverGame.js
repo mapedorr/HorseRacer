@@ -16,7 +16,10 @@ var Game = function(_gameId, io){
   var currentState = GAME_STATES.CREATED;
   var playerNames = ["Naked Snake", "Venom Snake", "Major Tom", "Major Zero", "Solid Snake", "Eva", "The Pain", "The Fear", "The End", "The Fury", "The Sorrow", "The Joy", "The Boss", "Big Boss", "Sniper Wolf", "Crying Wolf", "Raiden", "Vamp", "Gray Fox"];
   var players = null;
+  var readyPlayers = 0;
   var io = io;
+  var QuestionsObj = new Questions();
+  var currentQuestion = null;
 
   /**
    * Method that adds a player to the game.
@@ -34,18 +37,24 @@ var Game = function(_gameId, io){
         currentState = GAME_STATES.STARTED;
         return null;
       }
-      //Pick a random name for the player
+      // pick a random name for the player
       var playerName = playerNames.splice(parseInt(Math.random() * playerNames.length), 1);
       var newPlayer = new Player(socketObj.id, playerName, socketObj, this);
       players.push(newPlayer);
 
-      // Listen for new player message
+      // listen for new player message
       socketObj.on("horse selected", newPlayer.onHorseSelected);
 
-      // Listen for client disconnected
+      // listen for client disconnected
       socketObj.on("disconnect", newPlayer.onClientDisconnect);
 
-      // Listen for player answer
+      // listen for client ready to receive questions
+      socketObj.on("ready to play", _playerReady);
+
+      // listen for question request
+      socketObj.on("want question", _getRandomQuestion);
+
+      // listen for player answer
       socketObj.on("answer question", newPlayer.onAnswerQuestion);
 
       return {name: newPlayer.getName()};
@@ -92,8 +101,16 @@ var Game = function(_gameId, io){
     }
   };
 
-  var _calculateHorseMovement = function(responseTime){
-    return 1;
+  /**
+   * This function increments in one the counter for the players ready to start
+   * receiving questions.
+   * 
+   */
+  var _playerReady = function(){
+    readyPlayers++;
+    if(readyPlayers === players.length){
+      _getRandomQuestion();
+    }
   };
 
   /**
@@ -102,13 +119,34 @@ var Game = function(_gameId, io){
    * @return {[type]} [description]
    */
   var _getRandomQuestion = function(){
+    var availableQuestions = QuestionsObj.getQuestions();
+    var randomNumber = parseInt(Math.random() * (availableQuestions.length-1));
+    currentQuestion = availableQuestions.splice(randomNumber, 1)[0];
+    QuestionsObj.pushAsUsedQUestion(currentQuestion);
+    QuestionsObj.setQuestions(availableQuestions);
+    currentQuestion.options.unshift(currentQuestion.response);
+    var _question = {
+      q: currentQuestion.question,
+      o: []
+    };
+    do{
+      randomNumber = parseInt(Math.random() * currentQuestion.options.length);
+      _question.o.push(currentQuestion.options.splice(randomNumber, 1)[0]);
+    }while(currentQuestion.options.length > 0);
+    currentQuestion.options = _question.o;
 
+    io.sockets.emit("receive question", {question: _question});
+  };
+
+  var _verifyResponse = function(response){
+    return currentQuestion.options[response-1] === currentQuestion.response;
   };
 
   return {
     addPlayer: _addPlayer,
     getConnectedPlayers: _getConnectedPlayers,
-    playerSelectHorse: _playerSelectHorse
+    playerSelectHorse: _playerSelectHorse,
+    verifyResponse: _verifyResponse
   };
 
 };

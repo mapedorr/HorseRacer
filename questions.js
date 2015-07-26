@@ -134,30 +134,39 @@ var Questions = function(){
         "Tormenta",
         "Wolverine"
       ]
-    },
-    {
-      question: "",
-      response: "",
-      options: [
-        "",
-        "",
-        ""
-      ]
     }
+    // {
+    //   question: "",
+    //   response: "",
+    //   options: [
+    //     "",
+    //     "",
+    //     ""
+    //   ]
+    // }
   ];
   var _usedQuestions = [];
 
   var _getQuestions = function(){
-    return this._gameQuestions;
+    return _gameQuestions;
   };
 
   var _setQuestions = function(_newQuestions){
-    this._gameQuestions = _newQuestions;
+    _gameQuestions = _newQuestions;
+  };
+
+  var _pushAsUsedQuestion = function(question){
+    _usedQuestions.push(question);
   };
 
   return {
     getQuestions: _getQuestions,
-    setQuestions: _setQuestions
+    setQuestions: _setQuestions,
+    pushAsUsedQUestion: _pushAsUsedQuestion
   };
 
 };
+
+// Export the Questions class so you can use it in
+// other files by using require("Questions").Questions
+exports.Questions = Questions;

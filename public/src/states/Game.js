@@ -15,14 +15,15 @@ HorseRacer.Game = function(game){
   this.horsesRunning = false;
   this.responseTimeFinished = false;
   this.movedHorses = 0;
-  this.runButton = null;
+  this.raceTrackHeight = 0;
+  this.timerSpriteX = 0;
   this.questionGroup = null;
   this.questionTextBackground = null;
-  this.questionText = null;
+  this.questionTextObj = null;
   this.questionAnswersGroup = null;
-  this.questionAnswers = ["Quicksilver el man rápido", "Magneto el del futuro", "Tormenta la vieja de los rayos", "Wolverine el que se regenera"];
-  this.questionTextStyle = null
-  this.answerTextStyle = null
+  this.questionAnswers = [];
+  this.questionTextStyle = null;
+  this.answerTextStyle = null;
 };
 
 HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
@@ -30,6 +31,10 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
   this.gamePlayers = gamePlayers;
   this.playerHorseId = pickedHorseKey;
   this.socket = socket;
+
+  this.socket.on("receive question", function(data){
+    _me.receiveQuestion(data.question);
+  });
 
   this.socket.on("move horse", function(data){
     _me.moveHorse(data.amount);
@@ -48,13 +53,12 @@ HorseRacer.Game.prototype.create = function(){
   var trackHeight = 48;//64 - 16
   var horseHeight = 32;
   var raceTrackWidth = 320;
-  var raceTrackHeight = 256;
-  var timerSpriteX = this.game.world.width - 8;
-  var answerIsLeft = true;
+  this.raceTrackHeight = 256;
+  this.timerSpriteX = this.game.world.width - 8;
 
   // create the race tracks
   this.raceTracks = this.game.add.tileSprite(initialXPos,
-    initialYPos, raceTrackWidth, raceTrackHeight, 'race_track');
+    initialYPos, raceTrackWidth, this.raceTrackHeight, 'race_track');
 
   // create the horses in order of selection and fill the array of enemies
   this.horsesGroup = this.game.add.group(undefined, "horses");
@@ -71,25 +75,12 @@ HorseRacer.Game.prototype.create = function(){
     this.horsesGroup.add(horse);
   };
 
-  // create the button for making the horse run (tests)
-  // this.runButton = this.game.add.button(this.world.width / 2, 
-  //   this.world.height - 128, 
-  //   'runButton', 
-  //   this.responseAnswer, 
-  //   this, 
-  //   1,0,2);
-  // this.runButton.scale.set(0.5, 0.5);
-  // this.runButton.anchor.set(0.5, 0);
-  // this.runButton.input.useHandCursor = true;
-  // this.runButton.originalY = this.world.height - 128;
-  // this.runButton.y += 1000;
-
   // define the style that will use the question text
   this.questionTextStyle = {
     fill: '#010101',
     font:'12pt Arial',
     wordWrap: true,
-    wordWrapWidth: timerSpriteX,
+    wordWrapWidth: this.timerSpriteX,
     align: 'center'
   };
 
@@ -97,7 +88,7 @@ HorseRacer.Game.prototype.create = function(){
     fill: '#FAFAFA',
     font:'12pt Arial',
     wordWrap: true,
-    wordWrapWidth: timerSpriteX/2-2,
+    wordWrapWidth: this.timerSpriteX/2-2,
     align: 'center'
   };
 
@@ -105,79 +96,51 @@ HorseRacer.Game.prototype.create = function(){
   this.questionGroup = this.game.add.group(undefined, "question");
 
   // add to the game the Text object for the question text
-  this.questionText = this.game.make.text(timerSpriteX / 2,
-    raceTrackHeight + 5,
-    "¿Cuál es el nombre del personaje que hace John Travolta en Pulp Fiction?",
+  this.questionTextObj = this.game.make.text(this.timerSpriteX / 2,
+    this.raceTrackHeight + 5,
+    "Question. . .",
     this.questionTextStyle);
-  this.questionText.anchor.set(0.5, 0);
+  this.questionTextObj.anchor.set(0.5, 0);
 
   // create the background for the question text
-  var questionTextBackgroundBit = new Phaser.BitmapData(this.game, 'questionText-background');
-  questionTextBackgroundBit.ctx.beginPath();
-  questionTextBackgroundBit.ctx.rect(0, 0, timerSpriteX, this.questionText.bottom - raceTrackHeight);
-  questionTextBackgroundBit.ctx.fillStyle = "#ffec4a";
-  questionTextBackgroundBit.ctx.fill();
-  this.questionTextBackground = new Phaser.Sprite(this.game, 0, raceTrackHeight, questionTextBackgroundBit);
-  this.questionTextBackground.width = timerSpriteX;
+  this.questionTextBackground = new Phaser.Sprite(this.game, 0, this.raceTrackHeight);
+  this.questionTextBackground.width = this.timerSpriteX;
   
   this.questionGroup.addChild(this.questionTextBackground);
-  this.questionGroup.addChild(this.questionText);
+  this.questionGroup.addChild(this.questionTextObj);
 
   // add to the game the four Text objects for the question answers
   this.questionAnswersGroup = this.game.add.group(undefined, "questionAnswers");
-  var answersSpace = this.game.world.height - this.questionText.bottom;
-  var firstRowAnswersPos = answersSpace/4;
-  var secondRowAnswersPos = firstRowAnswersPos + firstRowAnswersPos*2;
-  var answerYPos = [
-    firstRowAnswersPos, firstRowAnswersPos,
-    secondRowAnswersPos, secondRowAnswersPos
-  ];
-  for(var i=0; i<this.questionAnswers.length; i++){
-    var answerXPos = timerSpriteX/4;
-    if(answerIsLeft == false){
-      answerXPos += answerXPos * 2;
-    }
-
+  for(var i=0; i<4; i++){
     // create the Text object for the answer
-    var answerTextObj = this.game.make.text(answerXPos,
-      this.questionText.bottom + answerYPos[i],
-      this.questionAnswers[i],
+    var answerTextObj = this.game.make.text(0, 0,
+      "Answer "+(i+1)+". . .",
       this.answerTextStyle);
     answerTextObj.anchor.set(0.5, 0.5);
 
-    // create the background for the answer
-    var answerBackgroundBit = new Phaser.BitmapData(this.game, 'answer'+(i+1)+'-background');
-    answerBackgroundBit.ctx.beginPath();
-    answerBackgroundBit.ctx.rect(0, 0, timerSpriteX/2, answersSpace/2);
-    answerBackgroundBit.ctx.fillStyle = "#237dbc";
-    answerBackgroundBit.ctx.fill();
-    answerBackgroundBit.ctx.strokeStyle = "#ffec4a";
-    answerBackgroundBit.ctx.stroke();
-    var answerBackground = new Phaser.Sprite(this.game, answerTextObj.world.x, answerTextObj.world.y, answerBackgroundBit);
+    var answerBackground = new Phaser.Sprite(this.game, 0, 0);
     answerBackground.answerId = i+1;
-    answerBackground.x -= timerSpriteX/4;
-    answerBackground.y -= answersSpace/4;
     answerBackground.inputEnabled = true;
     answerBackground.input.useHandCursor = true;
-    answerBackground.events.onInputDown.add(this.responseAnswer, this, 0, i+1);
+    answerBackground.events.onInputDown.add(this.responseAnswer, this);
     
     this.questionAnswersGroup.addChild(answerBackground);
     this.questionAnswersGroup.addChild(answerTextObj);
-
-    answerIsLeft = !answerIsLeft;
   }
 
   // create the bar for the timer
-  this.timerSprite = this.game.add.sprite(timerSpriteX, raceTrackHeight, 'loading_progress');
+  this.timerSprite = this.game.add.sprite(this.timerSpriteX, this.raceTrackHeight, 'loading_progress');
   this.timerSprite.width = 8;
-  this.timerSprite.height = this.game.world.height - raceTrackHeight; //  224px
-  this.timerSprite.originalY = raceTrackHeight;
+  this.timerSprite.height = this.game.world.height - this.raceTrackHeight; //  224px
+  this.timerSprite.originalY = this.raceTrackHeight;
 
   // create and start the question timer
   this.game.time.advancedTiming = true;
   this.questionTimer = this.game.time.create(false);
   this.questionTimer.loop(Phaser.Timer.SECOND, this.secondPassed, this);
-  this.questionTimer.start();
+
+  // notify to the server that I am ready for receiving a question
+  this.socket.emit("ready to play");
 };
 
 /**
@@ -185,7 +148,6 @@ HorseRacer.Game.prototype.create = function(){
  * 
  */
 HorseRacer.Game.prototype.responseAnswer = function(sourceObject){
-  console.log("Answer to send: ", sourceObject.answerId);
   if(this.horsesRunning === true){
     return;
   }
@@ -196,16 +158,14 @@ HorseRacer.Game.prototype.responseAnswer = function(sourceObject){
   // notify to the server the response of the player and the time it takes to
   // response it
   var _responseTime = (this.responseTimeFinished === true) ? null : this.questionTimer.ms;
-  this.socket.emit("answer question", {responseTime: _responseTime});
+  var _response = (this.responseTimeFinished === true) ? null : sourceObject.answerId;
+  this.socket.emit("answer question", {response: _response, responseTime: _responseTime});
 
   // restore defaults
   this.responseTimeFinished = false;
 
   // stop the timer for answering the question
   this.questionTimer.stop(false);
-
-  // hide the button for making the player's horse move
-  this.runButton.y += 1000;
 };
 
 /**
@@ -254,9 +214,6 @@ HorseRacer.Game.prototype.moveOpponentHorse = function(horseId, movementAmount){
  * 
  */
 HorseRacer.Game.prototype.secondPassed = function(){
-  // put the run button on its original position
-  this.runButton.y = this.runButton.originalY;
-
   // if the time has ended, make the player's horse move
   if(this.timerSprite.y + 22.4 >= this.game.world.height){
     if(this.horsesRunning === false){
@@ -293,6 +250,71 @@ HorseRacer.Game.prototype.horseMoved = function(){
     this.movedHorses = 0;
     this.timerSprite.y = this.timerSprite.originalY;
     this.horsesRunning = false;
-    this.questionTimer.start();
+    this.requestQuestion();
   }
+};
+
+/**
+ * Method that request to the server a question to show in the game.
+ * 
+ */
+HorseRacer.Game.prototype.requestQuestion = function(){
+  this.socket.emit("want question");
+};
+
+/**
+ * Method that draws on screen the question received by the server and starts
+ * the question timer.
+ * 
+ * @param  {object} questionObj      The object with the question's data
+ */
+HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
+  // get the data of the question and draws it on screen
+  this.questionTextObj.setText(questionObj.q);
+  this.questionTextBackground.texture.destroy(true);
+  var questionTextBackgroundBit = new Phaser.BitmapData(this.game, 'questionText-background');
+  questionTextBackgroundBit.ctx.beginPath();
+  questionTextBackgroundBit.ctx.rect(0, 0, this.timerSpriteX, this.questionTextObj.bottom - this.raceTrackHeight);
+  questionTextBackgroundBit.ctx.fillStyle = "#ffec4a";
+  questionTextBackgroundBit.ctx.fill();
+  this.questionTextBackground.loadTexture(questionTextBackgroundBit);
+
+  var answersSpace = this.game.world.height - this.questionTextObj.bottom;
+  var firstRowAnswersPos = answersSpace/4;
+  var secondRowAnswersPos = firstRowAnswersPos + firstRowAnswersPos*2;
+  var answerYPos = [
+    firstRowAnswersPos, firstRowAnswersPos,
+    secondRowAnswersPos, secondRowAnswersPos
+  ];
+  var answerIsLeft = true;
+  for(var i=0; i<4; i++){
+    var answerXPos = this.timerSpriteX/4;
+    if(answerIsLeft == false){
+      answerXPos += answerXPos * 2;
+    }
+
+    var answerTextObj = this.questionAnswersGroup.getChildAt((i*2)+1);
+    answerTextObj.setText(questionObj.o.shift());
+    answerTextObj.x = answerXPos;
+    answerTextObj.y = this.questionTextObj.bottom + answerYPos[i];
+    var answerSprite = this.questionAnswersGroup.getChildAt(i*2);
+
+    // create the background for the answer
+    answerSprite.texture.destroy(true);
+    var answerBackgroundBit = new Phaser.BitmapData(this.game, 'answer'+(i+1)+'-background');
+    answerBackgroundBit.ctx.beginPath();
+    answerBackgroundBit.ctx.rect(0, 0, this.timerSpriteX/2, answersSpace/2);
+    answerBackgroundBit.ctx.fillStyle = "#237dbc";
+    answerBackgroundBit.ctx.fill();
+    answerBackgroundBit.ctx.strokeStyle = "#ffec4a";
+    answerBackgroundBit.ctx.stroke();
+    answerSprite.loadTexture(answerBackgroundBit);
+    answerSprite.x = answerTextObj.x - (this.timerSpriteX/4);
+    answerSprite.y = answerTextObj.y - (answersSpace/4);
+
+    answerIsLeft = !answerIsLeft;
+  }
+
+  // start the timer for asnwering the question
+  this.questionTimer.start();
 };
