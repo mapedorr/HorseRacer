@@ -20,6 +20,8 @@ var Game = function(_gameId, io){
   var io = io;
   var QuestionsObj = new Questions();
   var currentQuestion = null;
+  var playersPerGame = 4;
+  var movedPlayers = 0;
 
   /**
    * Method that adds a player to the game.
@@ -33,7 +35,7 @@ var Game = function(_gameId, io){
     }
 
     if(currentState == GAME_STATES.WAITING){
-      if(players.length > 3){
+      if(players.length === playersPerGame){
         currentState = GAME_STATES.STARTED;
         return null;
       }
@@ -52,7 +54,7 @@ var Game = function(_gameId, io){
       socketObj.on("ready to play", _playerReady);
 
       // listen for question request
-      socketObj.on("want question", _getRandomQuestion);
+      socketObj.on("horse moved", _playerReadyForQuestion);
 
       // listen for player answer
       socketObj.on("answer question", newPlayer.onAnswerQuestion);
@@ -60,8 +62,6 @@ var Game = function(_gameId, io){
       return {name: newPlayer.getName()};
     }else{
       currentState = GAME_STATES.STARTED;
-      //  console.log("Maximum players limit reached in game: ", this.gameId);
-      
       return null;
     }
   };
@@ -87,7 +87,14 @@ var Game = function(_gameId, io){
   };
 
   var _playerSelectHorse = function(playerSocket){
-    if(players.length === 4){
+    var playersWithHorse = 0;
+    for(var i=0; i<players.length; i++){
+      if(players[i].getHorseName()){
+        playersWithHorse++;
+      }
+    }
+
+    if(playersWithHorse === playersPerGame){
       //Notify to the players that the game have to start
       currentState = GAME_STATES.STARTED;
       var playersData = [];
@@ -109,7 +116,21 @@ var Game = function(_gameId, io){
   var _playerReady = function(){
     readyPlayers++;
     if(readyPlayers === players.length){
-      _getRandomQuestion();
+      _sendRandomQuestion();
+    }
+  };
+
+  /**
+   * This function is called when the horse of a player ends its movement. When
+   * all the players in the match have finished their movements, the game have
+   * to send to them a new question.
+   * 
+   */
+  var _playerReadyForQuestion = function(){
+    movedPlayers++;
+    if(movedPlayers === playersPerGame){
+      movedPlayers = 0;
+      _sendRandomQuestion();
     }
   };
 
@@ -118,7 +139,7 @@ var Game = function(_gameId, io){
    * ready for its use in the game.
    * @return {[type]} [description]
    */
-  var _getRandomQuestion = function(){
+  var _sendRandomQuestion = function(){
     var availableQuestions = QuestionsObj.getQuestions();
     var randomNumber = parseInt(Math.random() * (availableQuestions.length-1));
     currentQuestion = availableQuestions.splice(randomNumber, 1)[0];
@@ -136,6 +157,7 @@ var Game = function(_gameId, io){
     currentQuestion.options = _question.o;
 
     io.sockets.emit("receive question", {question: _question});
+    console.log("availableQuestions >> ", availableQuestions.length);
   };
 
   var _verifyResponse = function(response){

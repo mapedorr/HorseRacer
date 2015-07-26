@@ -124,8 +124,10 @@ HorseRacer.MainMenu.prototype.playerConnected = function(data) {
     //Lock the selected horses and show the name of all the players
     if(data.connectedPlayers){
       for (var i = 0; i < data.connectedPlayers.length; i++) {
-        this.enabledHorses.splice(this.enabledHorses.indexOf(data.connectedPlayers[i].horseId), 1);
-        this.disableHorse(data.connectedPlayers[i]);
+        if(data.connectedPlayers[i].horseId){
+          this.enabledHorses.splice(this.enabledHorses.indexOf(data.connectedPlayers[i].horseId), 1);
+          this.disableHorse(data.connectedPlayers[i]);
+        }
       };
     }
 
@@ -144,7 +146,6 @@ HorseRacer.MainMenu.prototype.opponentHorseSelected = function(data) {
 };
 
 HorseRacer.MainMenu.prototype.startRace = function(gamePlayers){
-  console.log("gamePlayers", gamePlayers);
   this.state.start('Game', true, false, gamePlayers, this.pickedHorse, this.socket);
 };
 

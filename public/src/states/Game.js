@@ -122,7 +122,7 @@ HorseRacer.Game.prototype.create = function(){
     answerBackground.answerId = i+1;
     answerBackground.inputEnabled = true;
     answerBackground.input.useHandCursor = true;
-    answerBackground.events.onInputDown.add(this.responseAnswer, this);
+    answerBackground.events.onInputDown.add(this.sendResponse, this);
     
     this.questionAnswersGroup.addChild(answerBackground);
     this.questionAnswersGroup.addChild(answerTextObj);
@@ -147,7 +147,7 @@ HorseRacer.Game.prototype.create = function(){
  * Method that makes the player's horse move.
  * 
  */
-HorseRacer.Game.prototype.responseAnswer = function(sourceObject){
+HorseRacer.Game.prototype.sendResponse = function(sourceObject){
   if(this.horsesRunning === true){
     return;
   }
@@ -219,7 +219,7 @@ HorseRacer.Game.prototype.secondPassed = function(){
     if(this.horsesRunning === false){
       // indicate that the player has not responded the answer
       this.responseTimeFinished = true;
-      this.responseAnswer();
+      this.sendResponse();
     }
     this.questionTimer.stop(false);
     return;
@@ -250,16 +250,8 @@ HorseRacer.Game.prototype.horseMoved = function(){
     this.movedHorses = 0;
     this.timerSprite.y = this.timerSprite.originalY;
     this.horsesRunning = false;
-    this.requestQuestion();
+    this.socket.emit("horse moved");
   }
-};
-
-/**
- * Method that request to the server a question to show in the game.
- * 
- */
-HorseRacer.Game.prototype.requestQuestion = function(){
-  this.socket.emit("want question");
 };
 
 /**
