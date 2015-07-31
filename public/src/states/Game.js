@@ -24,6 +24,14 @@ HorseRacer.Game = function(game){
   this.questionAnswers = [];
   this.questionTextStyle = null;
   this.answerTextStyle = null;
+  this.correctAnswerGroup = null;
+  this.correctAnswerText = null;
+  this.correctAnswerSprite = null;
+  this.wrongAnswerGroup = null;
+  this.wrongAnswerText = null;
+  this.wrongAnswerSprite = null;
+  this.blackCrystalCorrectSprite = null;
+  this.blackCrystalWrongSprite = null;
 };
 
 HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
@@ -55,6 +63,8 @@ HorseRacer.Game.prototype.create = function(){
   var raceTrackWidth = 320;
   this.raceTrackHeight = 256;
   this.timerSpriteX = this.game.world.width - 8;
+  var userInteractionHeight = this.game.world.height - this.raceTrackHeight;
+  var userInteractionMiddle = ((userInteractionHeight) / 2) + this.raceTrackHeight;
 
   // create the race tracks
   this.raceTracks = this.game.add.tileSprite(initialXPos,
@@ -134,6 +144,81 @@ HorseRacer.Game.prototype.create = function(){
   this.timerSprite.height = this.game.world.height - this.raceTrackHeight; //  224px
   this.timerSprite.originalY = this.raceTrackHeight;
 
+  // create the black crystal
+  var blackCrystalBitmap = new Phaser.BitmapData(this.game, 'blackCrystal-background');
+  blackCrystalBitmap.ctx.beginPath();
+  blackCrystalBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+  blackCrystalBitmap.ctx.fillStyle = "#0D0D0D";
+  blackCrystalBitmap.ctx.fill();
+
+  // create the group for correct answer
+  this.correctAnswerGroup = this.game.add.group(undefined, "correctAnswerGroup");
+
+  this.blackCrystalCorrectSprite = new Phaser.Sprite(this.game, 0, 0, blackCrystalBitmap);
+  this.blackCrystalCorrectSprite.width = this.game.world.width;
+  this.blackCrystalCorrectSprite.height = userInteractionHeight;
+  this.blackCrystalCorrectSprite.x = this.game.world.width / 2;
+  this.blackCrystalCorrectSprite.y = userInteractionMiddle;
+  this.blackCrystalCorrectSprite.anchor.set(0.5, 0.5);
+  this.blackCrystalCorrectSprite.alpha = 0.8;
+
+  this.correctAnswerText = this.game.make.text(this.timerSpriteX / 2,
+    userInteractionMiddle,
+    "Correcto!",
+    { fill: '#FAFAFA', font:'12pt Arial', align: 'center' });
+  this.correctAnswerText.anchor.set(0.5, 0.5);
+
+  var correctAnswerBitmap = new Phaser.BitmapData(this.game, 'correctAnswer-background');
+  correctAnswerBitmap.ctx.beginPath();
+  correctAnswerBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+  correctAnswerBitmap.ctx.fillStyle = "#2ABB9B";
+  correctAnswerBitmap.ctx.fill();
+  this.correctAnswerSprite = new Phaser.Sprite(this.game, 0, 0, correctAnswerBitmap);
+  this.correctAnswerSprite.width = this.game.world.width;
+  this.correctAnswerSprite.height = 150;
+  this.correctAnswerSprite.x = this.game.world.width / 2;
+  this.correctAnswerSprite.y = userInteractionMiddle;
+  this.correctAnswerSprite.anchor.set(0.5, 0.5);
+
+  this.correctAnswerGroup.addChild(this.blackCrystalCorrectSprite);
+  this.correctAnswerGroup.addChild(this.correctAnswerSprite);
+  this.correctAnswerGroup.addChild(this.correctAnswerText);
+  this.correctAnswerGroup.visible = false;
+
+  // create the Sprite for wrong answer
+  this.wrongAnswerGroup = this.game.add.group(undefined, "wrongAnswerGroup");
+
+  this.blackCrystalWrongSprite = new Phaser.Sprite(this.game, 0, 0, blackCrystalBitmap);
+  this.blackCrystalWrongSprite.width = this.game.world.width;
+  this.blackCrystalWrongSprite.height = userInteractionHeight;
+  this.blackCrystalWrongSprite.x = this.game.world.width / 2;
+  this.blackCrystalWrongSprite.y = userInteractionMiddle;
+  this.blackCrystalWrongSprite.anchor.set(0.5, 0.5);
+  this.blackCrystalWrongSprite.alpha = 0.8;
+
+  this.wrongAnswerText = this.game.make.text(this.timerSpriteX / 2,
+    userInteractionMiddle,
+    "Incorrecto!",
+    { fill: '#FAFAFA', font:'12pt Arial', align: 'center' });
+  this.wrongAnswerText.anchor.set(0.5, 0.5);
+
+  var wrongAnswerBitmap = new Phaser.BitmapData(this.game, 'wrongAnswer-background');
+  wrongAnswerBitmap.ctx.beginPath();
+  wrongAnswerBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+  wrongAnswerBitmap.ctx.fillStyle = "#EF5A34";
+  wrongAnswerBitmap.ctx.fill();
+  this.wrongAnswerSprite = new Phaser.Sprite(this.game, 0, 0, wrongAnswerBitmap);
+  this.wrongAnswerSprite.width = this.game.world.width;
+  this.wrongAnswerSprite.height = 150;
+  this.wrongAnswerSprite.x = this.game.world.width / 2;
+  this.wrongAnswerSprite.y = userInteractionMiddle;
+  this.wrongAnswerSprite.anchor.set(0.5, 0.5);
+
+  this.wrongAnswerGroup.addChild(this.blackCrystalWrongSprite);
+  this.wrongAnswerGroup.addChild(this.wrongAnswerSprite);
+  this.wrongAnswerGroup.addChild(this.wrongAnswerText);
+  this.wrongAnswerGroup.visible = false;
+
   // create and start the question timer
   this.game.time.advancedTiming = true;
   this.questionTimer = this.game.time.create(false);
@@ -148,12 +233,22 @@ HorseRacer.Game.prototype.create = function(){
  * 
  */
 HorseRacer.Game.prototype.sendResponse = function(sourceObject){
+  console.log("---------------------------------------------------------------");
+
   if(this.horsesRunning === true){
     return;
   }
 
   // update the state of the player's horse
   this.horsesRunning = true;
+
+  // disable the buttons for sending response
+  for(var i=0; i<4; i++){
+    var answerSprite = this.questionAnswersGroup.getChildAt(i*2);
+    answerSprite.inputEnabled = false;
+    answerSprite.input.useHandCursor = true;
+  }
+
 
   // notify to the server the response of the player and the time it takes to
   // response it
@@ -174,6 +269,12 @@ HorseRacer.Game.prototype.sendResponse = function(sourceObject){
  * @param  {int} movementAmount     The distance the player's horse will move
  */
 HorseRacer.Game.prototype.moveHorse = function(movementAmount){
+  if(!movementAmount){
+    this.wrongAnswerGroup.visible = true;
+  }else{
+    this.correctAnswerGroup.visible = true;
+  }
+
   // move the player's horse
   this.game.add.tween(this.playerHorse).to(
     {x: this.playerHorse.x + movementAmount},
@@ -261,6 +362,9 @@ HorseRacer.Game.prototype.horseMoved = function(){
  * @param  {object} questionObj      The object with the question's data
  */
 HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
+  this.wrongAnswerGroup.visible = false;
+  this.correctAnswerGroup.visible = false;
+
   // get the data of the question and draws it on screen
   this.questionTextObj.setText(questionObj.q);
   this.questionTextBackground.texture.destroy(true);
@@ -303,6 +407,8 @@ HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
     answerSprite.loadTexture(answerBackgroundBit);
     answerSprite.x = answerTextObj.x - (this.timerSpriteX/4);
     answerSprite.y = answerTextObj.y - (answersSpace/4);
+    answerSprite.inputEnabled = true;
+    answerSprite.input.useHandCursor = true;
 
     answerIsLeft = !answerIsLeft;
   }
