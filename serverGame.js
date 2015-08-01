@@ -20,7 +20,7 @@ var Game = function(_gameId, io){
   var io = io;
   var QuestionsObj = new Questions();
   var currentQuestion = null;
-  var playersPerGame = 2;
+  var playersPerGame = 4;
   var movedPlayers = 0;
   var movementAmounts = [32, 22, 12, 5];
   var responseOrder = -1;
@@ -202,9 +202,9 @@ var Game = function(_gameId, io){
   var _verifyGameEnded = function(){
     if(playersWhoEnded == players.length-1){
       for(var i=0; i<players.length; i++){
-        if(!players[i].finalPosition){
-          players[i].finalPosition = _getPodiumPositionText();
-          players[i].sendPosition(players[i].finalPosition);
+        if(!players[i].getFinalPosition()){
+          players[i].setFinalPosition(_getPodiumPositionText());
+          players[i].sendPosition();
           break;
         }
       }

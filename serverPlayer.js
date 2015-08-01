@@ -68,16 +68,23 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
   var _onHorseMoved = function(){
     if(hostGame.finishLineReached(madeMovement) == true){
       finalPosition = hostGame.getPodiumPositionText();
-      _sendPosition(finalPosition);
+      _sendPosition();
       hostGame.verifyGameEnded();
     }else{
       hostGame.playerReadyForQuestion();
     }
   };
 
-  var _sendPosition = function(_position){
-    console.log(name, _position);
-    socket.emit("finish line reached", {position: _position});
+  var _sendPosition = function(){
+    socket.emit("finish line reached", {position: finalPosition});
+  };
+
+  var _setFinalPosition = function(newPosition){
+    finalPosition = newPosition;
+  };
+
+  var _getFinalPosition = function(){
+    return finalPosition;
   };
 
   // Define which variables and methods can be accessed
@@ -86,6 +93,8 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     setHorseName: _setHorseName,
     getName: _getName,
     setName: _setName,
+    setFinalPosition: _setFinalPosition,
+    getFinalPosition: _getFinalPosition,
     id: id,
     onHorseSelected: _onHorseSelected,
     onClientDisconnect: _onClientDisconnect,
