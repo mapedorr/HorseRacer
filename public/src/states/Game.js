@@ -27,11 +27,14 @@ HorseRacer.Game = function(game){
   this.correctAnswerGroup = null;
   this.correctAnswerText = null;
   this.correctAnswerSprite = null;
+  this.blackCrystalCorrectSprite = null;
   this.wrongAnswerGroup = null;
   this.wrongAnswerText = null;
   this.wrongAnswerSprite = null;
-  this.blackCrystalCorrectSprite = null;
   this.blackCrystalWrongSprite = null;
+  this.finishGroup = null;
+  this.finishText = null;
+  this.finishSprite = null;
 };
 
 HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
@@ -223,6 +226,31 @@ HorseRacer.Game.prototype.create = function(){
   this.wrongAnswerGroup.addChild(this.wrongAnswerText);
   this.wrongAnswerGroup.visible = false;
 
+  // create the group to show when the player reaches the finish line
+  this.finishGroup = this.game.add.group(undefined, "finishGroup");
+
+  this.finishText = this.game.make.text(this.game.world.width / 2,
+    userInteractionMiddle,
+    "Llegaste Primero!",
+    { fill: '#ECF0F1', font:'18pt Arial', align: 'center' });
+  this.finishText.anchor.set(0.5, 0.5);
+
+  var finishBitmap = new Phaser.BitmapData(this.game, 'finish-background');
+  finishBitmap.ctx.beginPath();
+  finishBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+  finishBitmap.ctx.fillStyle = "#FFFFFF";
+  finishBitmap.ctx.fill();
+  this.finishSprite = new Phaser.Sprite(this.game, 0, 0, finishBitmap);
+  this.finishSprite.width = this.game.world.width;
+  this.finishSprite.height = userInteractionHeight;
+  this.finishSprite.x = this.game.world.width / 2;
+  this.finishSprite.y = userInteractionMiddle;
+  this.finishSprite.anchor.set(0.5, 0.5);
+
+  this.finishGroup.addChild(this.finishSprite);
+  this.finishGroup.addChild(this.finishText);
+  this.finishGroup.visible = false;
+
   // create and start the question timer
   this.game.time.advancedTiming = true;
   this.questionTimer = this.game.time.create(false);
@@ -364,6 +392,10 @@ HorseRacer.Game.prototype.horseMoved = function(){
  * @param  {object} questionObj      The object with the question's data
  */
 HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
+  if(this.finishGroup.visible == true){
+    return;
+  }
+
   this.wrongAnswerGroup.visible = false;
   this.correctAnswerGroup.visible = false;
 
@@ -420,5 +452,7 @@ HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
 };
 
 HorseRacer.Game.prototype.showFinalPosition = function(position){
-  console.log("Terminé en la posición >> " + position);
+  this.finishSprite.tint = (position.indexOf("burro") > 0) ? 0xE74C3C : 0x2980B9;
+  this.finishText.setText(position + "!");
+  this.finishGroup.visible = true;
 };

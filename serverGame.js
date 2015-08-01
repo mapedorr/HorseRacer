@@ -27,6 +27,11 @@ var Game = function(_gameId, io){
   var gameWorldWidth = 320;
   var playersWhoEnded = 0;
   var playersAnswering = 0;
+  var positionTexts = {
+    "1": "Primero",
+    "2": "Segundo",
+    "3": "Tercero"
+  };
 
   /**
    * Method that adds a player to the game.
@@ -135,7 +140,7 @@ var Game = function(_gameId, io){
    */
   var _playerReadyForQuestion = function(){
     movedPlayers++;
-    if(movedPlayers === playersAnswering){
+    if(movedPlayers >= playersAnswering){
       movedPlayers = 0;
       _sendRandomQuestion();
     }
@@ -187,8 +192,23 @@ var Game = function(_gameId, io){
     return false;
   };
 
-  var _getPodiumPosition = function(){
-    return ++playersWhoEnded;
+  var _getPodiumPositionText = function(){
+    if(playersWhoEnded == players.length-1){
+      return "Eres el burro";
+    }
+    return "Llegaste " + positionTexts[++playersWhoEnded];
+  };
+
+  var _verifyGameEnded = function(){
+    if(playersWhoEnded == players.length-1){
+      for(var i=0; i<players.length; i++){
+        if(!players[i].finalPosition){
+          players[i].finalPosition = _getPodiumPositionText();
+          players[i].sendPosition(players[i].finalPosition);
+          break;
+        }
+      }
+    }
   };
 
   return {
@@ -198,7 +218,8 @@ var Game = function(_gameId, io){
     verifyAndCalculate: _verifyAndCalculate,
     playerReadyForQuestion: _playerReadyForQuestion,
     finishLineReached: _finishLineReached,
-    getPodiumPosition: _getPodiumPosition
+    getPodiumPositionText: _getPodiumPositionText,
+    verifyGameEnded: _verifyGameEnded
   };
 
 };
