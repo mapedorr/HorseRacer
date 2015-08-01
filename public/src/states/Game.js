@@ -52,6 +52,10 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
     _me.moveOpponentHorse(data.horseId, data.amount);
   });
 
+  this.socket.on("finish line reached", function(data){
+    _me.showFinalPosition(data.position);
+  });
+
 };
 
 HorseRacer.Game.prototype.create = function(){
@@ -233,8 +237,6 @@ HorseRacer.Game.prototype.create = function(){
  * 
  */
 HorseRacer.Game.prototype.sendResponse = function(sourceObject){
-  console.log("---------------------------------------------------------------");
-
   if(this.horsesRunning === true){
     return;
   }
@@ -415,4 +417,8 @@ HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
 
   // start the timer for asnwering the question
   this.questionTimer.start();
+};
+
+HorseRacer.Game.prototype.showFinalPosition = function(position){
+  console.log("Terminé en la posición >> " + position);
 };

@@ -20,8 +20,13 @@ var Game = function(_gameId, io){
   var io = io;
   var QuestionsObj = new Questions();
   var currentQuestion = null;
-  var playersPerGame = 4;
+  var playersPerGame = 2;
   var movedPlayers = 0;
+  var movementAmounts = [32, 22, 12, 5];
+  var responseOrder = -1;
+  var gameWorldWidth = 320;
+  var playersWhoEnded = 0;
+  var playersAnswering = 0;
 
   /**
    * Method that adds a player to the game.
@@ -33,6 +38,8 @@ var Game = function(_gameId, io){
       players = [];
       currentState = GAME_STATES.WAITING;
     }
+
+    playersAnswering++;
 
     if(currentState == GAME_STATES.WAITING){
       if(players.length === playersPerGame){
@@ -54,7 +61,7 @@ var Game = function(_gameId, io){
       socketObj.on("ready to play", _playerReady);
 
       // listen for question request
-      socketObj.on("horse moved", _playerReadyForQuestion);
+      socketObj.on("horse moved", newPlayer.onHorseMoved);
 
       // listen for player answer
       socketObj.on("answer question", newPlayer.onAnswerQuestion);
@@ -128,7 +135,7 @@ var Game = function(_gameId, io){
    */
   var _playerReadyForQuestion = function(){
     movedPlayers++;
-    if(movedPlayers === playersPerGame){
+    if(movedPlayers === playersAnswering){
       movedPlayers = 0;
       _sendRandomQuestion();
     }
@@ -156,19 +163,42 @@ var Game = function(_gameId, io){
     }while(currentQuestion.options.length > 0);
     currentQuestion.options = _question.o;
 
+    // reset the response order indicator
+    responseOrder = -1;
+
     io.sockets.emit("receive question", {question: _question});
-    console.log("availableQuestions >> ", availableQuestions.length);
   };
 
-  var _verifyResponse = function(response){
-    return currentQuestion.options[response-1] === currentQuestion.response;
+  var _verifyAndCalculate = function(response){
+    if(currentQuestion.options[response-1] === currentQuestion.response){
+      // correct answer
+      responseOrder++;
+      return movementAmounts[responseOrder];
+    }
+    // wrong answer
+    return 0;
+  };
+
+  var _finishLineReached = function(movementAmount){
+    if(movementAmount >= gameWorldWidth){
+      playersAnswering--;
+      return true;
+    }
+    return false;
+  };
+
+  var _getPodiumPosition = function(){
+    return ++playersWhoEnded;
   };
 
   return {
     addPlayer: _addPlayer,
     getConnectedPlayers: _getConnectedPlayers,
     playerSelectHorse: _playerSelectHorse,
-    verifyResponse: _verifyResponse
+    verifyAndCalculate: _verifyAndCalculate,
+    playerReadyForQuestion: _playerReadyForQuestion,
+    finishLineReached: _finishLineReached,
+    getPodiumPosition: _getPodiumPosition
   };
 
 };
