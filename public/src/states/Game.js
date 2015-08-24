@@ -301,6 +301,7 @@ HorseRacer.Game.prototype.sendResponse = function(sourceObject){
 HorseRacer.Game.prototype.moveHorse = function(movementAmount){
   if(this.finishGroup.visible == true){
     this.horseMoved();
+    this.socket.emit("horse moved");
   }
 
   if(!movementAmount){
@@ -318,7 +319,10 @@ HorseRacer.Game.prototype.moveHorse = function(movementAmount){
     0,
     0,
     false
-  ).onComplete.add(this.horseMoved, this);
+  ).onComplete.add(function(){
+    this.horseMoved();
+    this.socket.emit("horse moved");
+  }, this);
 };
 
 /**
@@ -385,7 +389,6 @@ HorseRacer.Game.prototype.horseMoved = function(){
     this.movedHorses = 0;
     this.timerSprite.y = this.timerSprite.originalY;
     this.horsesRunning = false;
-    this.socket.emit("horse moved");
   }
 };
 
