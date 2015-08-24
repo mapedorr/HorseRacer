@@ -66,17 +66,21 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
   };
 
   var _onHorseMoved = function(){
+    hostGame.playerReadyForQuestion();
+
+    if(finalPosition){
+      return;
+    }
+
     if(hostGame.finishLineReached(madeMovement) == true){
       finalPosition = hostGame.getPodiumPositionText();
-      _sendPosition();
       hostGame.verifyGameEnded();
-    }else{
-      hostGame.playerReadyForQuestion();
+      _sendPosition();
     }
   };
 
   var _sendPosition = function(){
-    socket.emit("finish line reached", {position: finalPosition});
+    socket.emit("finish reached", {position: finalPosition});
   };
 
   var _setFinalPosition = function(newPosition){

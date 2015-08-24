@@ -18,12 +18,14 @@ app.get('/', function(req, res){
 
 //Function executed when a player clicks the "PLAY" button on the main screen.
 io.on('connection', function(socket){
-  var playerAdded = games[0].addPlayer(socket);
+  if(games[games.length-1].canHostPlayer() == false){
+    games.push(new Game(games.length + 1, io));
+  }
+
+  var playerAdded = games[games.length-1].addPlayer(socket);
   if(playerAdded){
     var _connectedPlayers = games[0].getConnectedPlayers();
     this.emit("player connected", {connectedPlayers: _connectedPlayers, playerName: playerAdded.name});
-  }else{
-    //TODO: Put the player in a new game!!!
   }
 });
 

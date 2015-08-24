@@ -55,7 +55,7 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
     _me.moveOpponentHorse(data.horseId, data.amount);
   });
 
-  this.socket.on("finish line reached", function(data){
+  this.socket.on("finish reached", function(data){
     _me.showFinalPosition(data.position);
   });
 
@@ -299,6 +299,10 @@ HorseRacer.Game.prototype.sendResponse = function(sourceObject){
  * @param  {int} movementAmount     The distance the player's horse will move
  */
 HorseRacer.Game.prototype.moveHorse = function(movementAmount){
+  if(this.finishGroup.visible == true){
+    this.horseMoved();
+  }
+
   if(!movementAmount){
     this.wrongAnswerGroup.visible = true;
   }else{
@@ -393,6 +397,9 @@ HorseRacer.Game.prototype.horseMoved = function(){
  */
 HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
   if(this.finishGroup.visible == true){
+    this.horsesRunning = false;
+    this.responseTimeFinished = true;
+    this.sendResponse();
     return;
   }
 
@@ -452,7 +459,8 @@ HorseRacer.Game.prototype.receiveQuestion = function(questionObj){
 };
 
 HorseRacer.Game.prototype.showFinalPosition = function(position){
-  this.finishSprite.tint = (position.indexOf("burro") > 0) ? 0xE74C3C : 0x2980B9;
+  this.finishSprite.tint = (position.indexOf("burro") != -1) ? 0xE74C3C : 0x2980B9;
   this.finishText.setText(position + "!");
   this.finishGroup.visible = true;
+  this.finishGroup.update();
 };

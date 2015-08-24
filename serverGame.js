@@ -20,9 +20,9 @@ var Game = function(_gameId, io){
   var io = io;
   var QuestionsObj = new Questions();
   var currentQuestion = null;
-  var playersPerGame = 4;
+  var playersPerGame = 3;
   var movedPlayers = 0;
-  var movementAmounts = [32, 22, 12, 5];
+  var movementAmounts = [32*3, 22*3, 12*3, 5*3];
   var responseOrder = -1;
   var gameWorldWidth = 320;
   var playersWhoEnded = 0;
@@ -140,7 +140,7 @@ var Game = function(_gameId, io){
    */
   var _playerReadyForQuestion = function(){
     movedPlayers++;
-    if(movedPlayers >= playersAnswering){
+    if(movedPlayers == playersAnswering){
       movedPlayers = 0;
       _sendRandomQuestion();
     }
@@ -153,6 +153,10 @@ var Game = function(_gameId, io){
    */
   var _sendRandomQuestion = function(){
     var availableQuestions = QuestionsObj.getQuestions();
+    if(availableQuestions && availableQuestions.length == 0){
+      return;
+    }
+
     var randomNumber = parseInt(Math.random() * (availableQuestions.length-1));
     currentQuestion = availableQuestions.splice(randomNumber, 1)[0];
     QuestionsObj.pushAsUsedQUestion(currentQuestion);
@@ -186,29 +190,40 @@ var Game = function(_gameId, io){
 
   var _finishLineReached = function(movementAmount){
     if(movementAmount >= gameWorldWidth){
-      playersAnswering--;
+      // playersAnswering--;
+      playersWhoEnded++;
       return true;
     }
     return false;
   };
 
   var _getPodiumPositionText = function(){
-    if(playersWhoEnded == players.length-1){
-      return "Eres el burro";
-    }
-    return "Llegaste " + positionTexts[++playersWhoEnded];
+    // if(playersWhoEnded == players.length){
+    //   return "Eres el burro";
+    // }
+    return "Llegaste " + positionTexts[playersWhoEnded];
   };
 
   var _verifyGameEnded = function(){
     if(playersWhoEnded == players.length-1){
       for(var i=0; i<players.length; i++){
         if(!players[i].getFinalPosition()){
-          players[i].setFinalPosition(_getPodiumPositionText());
+          players[i].setFinalPosition("Eres el burro");
           players[i].sendPosition();
+          return true;
           break;
         }
       }
     }
+    return false;
+  };
+
+  var _canHostPlayer = function(){
+    if(players 
+        && players.length === playersPerGame){
+      return false;
+    }
+    return true;
   };
 
   return {
@@ -219,7 +234,8 @@ var Game = function(_gameId, io){
     playerReadyForQuestion: _playerReadyForQuestion,
     finishLineReached: _finishLineReached,
     getPodiumPositionText: _getPodiumPositionText,
-    verifyGameEnded: _verifyGameEnded
+    verifyGameEnded: _verifyGameEnded,
+    canHostPlayer: _canHostPlayer
   };
 
 };
