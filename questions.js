@@ -134,7 +134,179 @@ var Questions = function(){
         "Tormenta",
         "Wolverine"
       ]
+    },
+    {
+      question: "En La Estrategia del Caracol, ¿cuál era el apellido del Perro?",
+      response: "Romero",
+      options: [
+        "López",
+        "Carrero",
+        "Ramírez"
+      ]
+    },
+    {
+      question: "¿Cuál es el nombre del protagonista de El Club de la Pelea?",
+      response: "Edward Norton",
+      options: [
+        "Johny Deep",
+        "Brad Pitt",
+        "Michael Douglas"
+      ]
+    },
+    {
+      question: "¿Cuál es el nombre del general romano que interpreta Russell Crowe en Gladiador?",
+      response: "Máximo",
+      options: [
+        "Perseo",
+        "Octavio",
+        "Quinto"
+      ]
+    },
+    {
+      question: "¿Cómo se llama el pequeño robot que en Wall-E está obsesionado con la limpieza?",
+      response: "Mo",
+      options: [
+        "No",
+        "Me",
+        "Mou"
+      ]
+    },
+    {
+      question: "En Ratatouille, ¿cuál es la famosa frase del chef Gusteau?",
+      response: "Cualquiera puede cocinar",
+      options: [
+        "Todos pueden cocinar",
+        "Nadie puede cocinar",
+        "Todos cocinan rico"
+      ]
+    },
+    {
+      question: "¿Cuál es el arma que usa El Oso, de Bastardos sin Gloria, para asesinar Nazis?",
+      response: "Un bate",
+      options: [
+        "Un hacha",
+        "Una espada",
+        "Un rifle"
+      ]
+    },
+    {
+      question: "En Kill Bill, ¿cuál es el órgano que el maestro Pai Mei le quita a Elle?",
+      response: "El ojo derecho",
+      options: [
+        "El ojo izquierdo",
+        "Un diente",
+        "La oreja derecha"
+      ]
+    },
+    {
+      question: "¿Cuál es la ciudad en la que se desarrolla la película Match Point, de Woody Allen?",
+      response: "Londres",
+      options: [
+        "París",
+        "Nueva York",
+        "Liverpool"
+      ]
+    },
+    {
+      question: "¿En El Padrino, cuál es la razón por la que don Vito lleva el apellido Corleone?",
+      response: "Es su ciudad de origen",
+      options: [
+        "Es el apellido materno",
+        "Es el apellido paterno",
+        "Es un apodo de la cárcel"
+      ]
+    },
+    {
+      question: "¿Cuál de las siguientes películas orientales fue producida por Quentin Tarantino?",
+      response: "Héroe",
+      options: [
+        "La casa de las dagas voladoras",
+        "El último samurai",
+        "El tigre y el dragón"
+      ]
+    },
+    {
+      question: "En la película Sunshine (Alerta solar), ¿cuál es el planeta donde se encuentra el Ícaro I?",
+      response: "Mercurio",
+      options: [
+        "Marte",
+        "Venus",
+        "La Tierra"
+      ]
+    },
+    {
+      question: "En Kill Bill, ¿cuál es el arma que utiliza Beatrix para asesinar a Bill?",
+      response: "Ninguna",
+      options: [
+        "Un veneno",
+        "Una daga",
+        "Un revólver"
+      ]
+    },
+    {
+      question: "En Matrix, ¿cuál es el nombre de Neo?",
+      response: "Thomas Anderson",
+      options: [
+        "Thomas Smith",
+        "Smith Douglas",
+        "Andrew Anderson"
+      ]
+    },
+    {
+      question: "¿Cuál es el actor que representa a Michael Corleone, en El Padrino?",
+      response: "Al Pacino",
+      options: [
+        "Danny de Vitto",
+        "Marlon Brando",
+        "Robert De Niro"
+      ]
+    },
+    {
+      question: "¿Cuál es el nombre del director de Apocalypse Now?",
+      response: "Francis Ford Coppola",
+      options: [
+        "Aldous Huxley",
+        "Steven Spielberg",
+        "Roman Polanski"
+      ]
+    },
+    {
+      question: "En El Club de la Pelea, ¿cómo se libera el protagonista de Tyler Durden?",
+      response: "Pegándose un tiro",
+      options: [
+        "Pidiéndole que se vaya",
+        "Abandonándolo",
+        "Medicándose"
+      ]
+    },
+    {
+      question: "En Pulp Fiction, ¿a qué se debe la crisis que sufre Mya Wallace?",
+      response: "Aspira heroína",
+      options: [
+        "Un ataque de nervios",
+        "No se bañó",
+        "Se inyectó jarabe"
+      ]
+    },
+    {
+      question: "¿Cuál es la prenda que, según Edna Moda (Los Increíbles), nunca debe llevar un superhéroe?",
+      response: "La capa",
+      options: [
+        "El casco",
+        "Las hombreras",
+        "Los calsoncillos por fuera"
+      ]
+    },
+    {
+      question: "En la saga Star Wars, ¿qué relación tienen entre sí Luke Skywalker y la princesa Leia?",
+      response: "Hermanos",
+      options: [
+        "Primos",
+        "Amantes",
+        "Madre e hijo"
+      ]
     }
+    // ,
     // {
     //   question: "",
     //   response: "",
