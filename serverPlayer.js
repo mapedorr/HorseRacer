@@ -91,12 +91,17 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     return finalPosition;
   };
 
+  var _getSocket = function(){
+    return socket;
+  };
+
   // Define which variables and methods can be accessed
   return {
     getHorseName: _getHorseName,
     setHorseName: _setHorseName,
     getName: _getName,
     setName: _setName,
+    getSocket: _getSocket,
     setFinalPosition: _setFinalPosition,
     getFinalPosition: _getFinalPosition,
     id: id,

@@ -19,17 +19,17 @@ app.get('/', function(req, res){
 //Function executed when a player clicks the "PLAY" button on the main screen.
 io.on('connection', function(socket){
   if(games[games.length-1].canHostPlayer() == false){
-    games.push(new Game(games.length + 1, io));
+    games.push(new Game(games.length + 1));
   }
-
-  var playerAdded = games[games.length-1].addPlayer(socket);
+  var currentGame = games[games.length-1];
+  var playerAdded = currentGame.addPlayer(socket);
   if(playerAdded){
-    var _connectedPlayers = games[0].getConnectedPlayers();
+    var _connectedPlayers = currentGame.getConnectedPlayers();
     this.emit("player connected", {connectedPlayers: _connectedPlayers, playerName: playerAdded.name});
   }
 });
 
 http.listen(3000, function(){
-  games.push(new Game(games.length + 1, io));
+  games.push(new Game(games.length + 1));
   console.log('listening on *:3000');
 });

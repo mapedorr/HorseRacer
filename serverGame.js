@@ -4,7 +4,7 @@
 var Player = require("./serverPlayer").Player;
 var Questions = require("./questions").Questions;
 
-var Game = function(_gameId, io){
+var Game = function(_gameId){
   var gameId = _gameId;
   var GAME_STATES = {
     CREATED: 'c',
@@ -17,12 +17,11 @@ var Game = function(_gameId, io){
   var playerNames = ["Naked Snake", "Venom Snake", "Major Tom", "Major Zero", "Solid Snake", "Eva", "The Pain", "The Fear", "The End", "The Fury", "The Sorrow", "The Joy", "The Boss", "Big Boss", "Sniper Wolf", "Crying Wolf", "Raiden", "Vamp", "Gray Fox"];
   var players = null;
   var readyPlayers = 0;
-  var io = io;
   var QuestionsObj = new Questions();
   var currentQuestion = null;
-  var playersPerGame = 3;
+  var playersPerGame = 4;
   var movedPlayers = 0;
-  var movementAmounts = [32*3, 22*3, 12*3, 5*3];
+  var movementAmounts = [32, 22, 12, 5];
   var responseOrder = -1;
   var gameWorldWidth = 320;
   var playersWhoEnded = 0;
@@ -116,7 +115,9 @@ var Game = function(_gameId, io){
           playerHorse: players[i].getHorseName()
         });
       };
-      io.sockets.emit("start race", {gamePlayers: playersData});
+      for (var i = 0; i < players.length; i++) {
+        (players[i].getSocket()).emit("start race", {gamePlayers: playersData});
+      }
     }
   };
 
@@ -175,7 +176,9 @@ var Game = function(_gameId, io){
     // reset the response order indicator
     responseOrder = -1;
 
-    io.sockets.emit("receive question", {question: _question});
+    for (var i = 0; i < players.length; i++) {
+      (players[i].getSocket()).emit("receive question", {question: _question});
+    }
   };
 
   var _verifyAndCalculate = function(response){

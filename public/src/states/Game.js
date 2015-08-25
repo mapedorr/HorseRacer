@@ -302,6 +302,7 @@ HorseRacer.Game.prototype.moveHorse = function(movementAmount){
   if(this.finishGroup.visible == true){
     this.horseMoved();
     this.socket.emit("horse moved");
+    return;
   }
 
   if(!movementAmount){
