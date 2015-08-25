@@ -25,7 +25,7 @@ io.on('connection', function(socket){
   var playerAdded = currentGame.addPlayer(socket);
   if(playerAdded){
     var _connectedPlayers = currentGame.getConnectedPlayers();
-    this.emit("player connected", {connectedPlayers: _connectedPlayers, playerName: playerAdded.name});
+    playerAdded.socket.emit("player connected", {connectedPlayers: _connectedPlayers, playerName: playerAdded.name});
   }
 });
 

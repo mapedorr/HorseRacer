@@ -11,6 +11,7 @@ HorseRacer.MainMenu = function(game){
   this.playerHorseTextBitmap = null;
   this.enabledHorses = [];
   this.socket = null;
+  this.spriteObjTemp = null;
 };
 
 HorseRacer.MainMenu.prototype.preload = function(){
@@ -70,26 +71,6 @@ HorseRacer.MainMenu.prototype.update = function(){
   //@TODO
 };
 
-/**
- * Method called when a horse is selected by the player.
- * This make the game begins.
- * 
- * @return {[type]} [description]
- */
-HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
-  this.pickedHorse = spriteObj.horseId;
-  //Disable the picked horse
-  this._setDisabled(spriteObj, {horseId: spriteObj.horseId, name: this.playerName});
-
-  //Disable the remaining horses
-  this.enabledHorses.splice(this.enabledHorses.indexOf(spriteObj.horseId), 1);
-  for (var i = 0; i < this.enabledHorses.length; i++) {
-    this.disableHorse({horseId: this.enabledHorses[i]});
-  };
-
-  this.socket.emit("horse selected", {name: this.pickedHorse});
-};
-
 HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   var _me = this;
 
@@ -103,7 +84,11 @@ HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   this.socket.on("disconnect", function(){
     _me.playerDisconnected();
   });
-  
+
+  this.socket.on("valid horse", function(){
+    _me.disablePlickedHorse();
+  });
+
   //New player message received
   this.socket.on("opponent horse selected", function(data){
     _me.opponentHorseSelected(data);
@@ -119,6 +104,29 @@ HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   });
 };
 
+/**
+ * Method called when a horse is selected by the player.
+ * This make the game begins.
+ * 
+ * @return {[type]} [description]
+ */
+HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
+  this.spriteObjTemp = spriteObj;
+  this.socket.emit("horse selected", {name: spriteObj.horseId});
+};
+
+HorseRacer.MainMenu.prototype.disablePlickedHorse = function(){
+  this.pickedHorse = this.spriteObjTemp.horseId;
+  //Disable the picked horse
+  this._setDisabled(this.spriteObjTemp, {horseId: this.spriteObjTemp.horseId, name: this.playerName});
+
+  //Disable the remaining horses
+  this.enabledHorses.splice(this.enabledHorses.indexOf(this.spriteObjTemp.horseId), 1);
+  for (var i = 0; i < this.enabledHorses.length; i++) {
+    this.disableHorse({horseId: this.enabledHorses[i]});
+  };
+};
+
 //Socket connected
 HorseRacer.MainMenu.prototype.playerConnected = function(data) {
     //Lock the selected horses and show the name of all the players
@@ -132,6 +140,7 @@ HorseRacer.MainMenu.prototype.playerConnected = function(data) {
     }
 
     //Show the name the server give me
+    console.log("Mi name is", data.playerName[0]);
     this.setPlayerName(data.playerName[0]);
 };
 
@@ -155,7 +164,7 @@ HorseRacer.MainMenu.prototype.disableHorse = function(opponentObj){
 
 HorseRacer.MainMenu.prototype._setDisabled = function(spriteObj, data){
   if(spriteObj.horseId == data.horseId){
-    spriteObj.frame = 1;
+    spriteObj.frame = spriteObj.frame || 1;
     spriteObj.inputEnabled = false;
     spriteObj.input.useHandCursor = false;
     if(data.name){

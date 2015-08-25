@@ -33,7 +33,14 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
 
   // New player has joined
   var _onHorseSelected = function(data) {
+    // search if the picked name is not selected by other player
+    if(hostGame.verifyNameAvailability(data.name) == false){
+      return;
+    }
+
     _setHorseName(data.name);
+    socket.emit("valid horse");
+
     //Broadcast selected horse to connected sockets
     socket.broadcast.emit("opponent horse selected", {
       horseId: horseName,

@@ -21,7 +21,7 @@ var Game = function(_gameId){
   var currentQuestion = null;
   var playersPerGame = 4;
   var movedPlayers = 0;
-  var movementAmounts = [32, 22, 12, 5];
+  var movementAmounts = [32*3, 22*3, 12*3, 5*3];
   var responseOrder = -1;
   var gameWorldWidth = 320;
   var playersWhoEnded = 0;
@@ -52,6 +52,7 @@ var Game = function(_gameId){
       }
       // pick a random name for the player
       var playerName = playerNames.splice(parseInt(Math.random() * playerNames.length), 1);
+      console.log("playerName", playerName);
       var newPlayer = new Player(socketObj.id, playerName, socketObj, this);
       players.push(newPlayer);
 
@@ -70,7 +71,7 @@ var Game = function(_gameId){
       // listen for player answer
       socketObj.on("answer question", newPlayer.onAnswerQuestion);
 
-      return {name: newPlayer.getName()};
+      return {socket: socketObj, name: newPlayer.getName()};
     }else{
       currentState = GAME_STATES.STARTED;
       return null;
@@ -229,6 +230,16 @@ var Game = function(_gameId){
     return true;
   };
 
+  var _verifyNameAvailability = function(nameToValidate){
+    for(var i=0; i<players.length; i++){
+      if(players[i].getHorseName() && players[i].getHorseName() == nameToValidate){
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   return {
     addPlayer: _addPlayer,
     getConnectedPlayers: _getConnectedPlayers,
@@ -238,7 +249,8 @@ var Game = function(_gameId){
     finishLineReached: _finishLineReached,
     getPodiumPositionText: _getPodiumPositionText,
     verifyGameEnded: _verifyGameEnded,
-    canHostPlayer: _canHostPlayer
+    canHostPlayer: _canHostPlayer,
+    verifyNameAvailability: _verifyNameAvailability
   };
 
 };
