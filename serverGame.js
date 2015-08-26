@@ -329,6 +329,10 @@ var Game = function(_gameId){
       }
     };
   };
+  
+  var _getGameId = function(){
+    return gameId;
+  };
 
   return {
     addPlayer: _addPlayer,
@@ -344,7 +348,8 @@ var Game = function(_gameId){
     verifyNameAvailability: _verifyNameAvailability,
     emitToOthers: _emitToOthers,
     playerReady: _playerReady,
-    getCorrectAnswer: _getCorrectAnswer
+    getCorrectAnswer: _getCorrectAnswer,
+    getGameId: _getGameId
   };
 
 };
