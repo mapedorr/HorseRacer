@@ -17,7 +17,7 @@ HorseRacer.MainMenu = function(game){
 
 HorseRacer.MainMenu.prototype.create = function(){
   //Initiate the socket connection to the server.
-  this.socket = io();
+  this.socket = io.connect('https://who-is-the-donkey-mapedorr.c9.io', {reconnection: false});
 
   //@TODO Add the elements to show in the main menu screen ("Pick a horse!" screen)
   this.horsesGroup = this.game.add.group(undefined, "horse_pick");

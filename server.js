@@ -30,6 +30,8 @@ var addPlayerToGame = function(socket){
   if(currentGame.canHostPlayer() == false){
     currentGame = new Game(games.length + 1);
     games.push(currentGame);
+    console.log("games: ", games.length);
+    console.log("____________________________________");
   }
 
   var playerAdded = currentGame.addPlayer(socket);
@@ -58,7 +60,7 @@ io.on('connection', function(socket){
   addPlayerToGame(socket);
 });
 
-http.listen(3000, function(){
+http.listen(process.env.PORT || 3000, process.env.IP, function(){
   games.push(new Game(games.length + 1));
   console.log('listening on *:3000');
 });
