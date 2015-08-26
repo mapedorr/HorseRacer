@@ -52,7 +52,6 @@ var Game = function(_gameId){
       }
       // pick a random name for the player
       var playerName = playerNames.splice(parseInt(Math.random() * playerNames.length), 1);
-      console.log("playerName", playerName);
       var newPlayer = new Player(socketObj.id, playerName, socketObj, this);
       players.push(newPlayer);
 

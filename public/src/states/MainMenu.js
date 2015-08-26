@@ -140,7 +140,6 @@ HorseRacer.MainMenu.prototype.playerConnected = function(data) {
     }
 
     //Show the name the server give me
-    console.log("Mi name is", data.playerName[0]);
     this.setPlayerName(data.playerName[0]);
 };
 
