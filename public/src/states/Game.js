@@ -59,6 +59,10 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
     _me.showFinalPosition(data.position);
   });
 
+  this.socket.on("oponent finished", function(data){
+    _me.showOponentPosition(data);
+  });
+
 };
 
 HorseRacer.Game.prototype.create = function(){
@@ -83,6 +87,7 @@ HorseRacer.Game.prototype.create = function(){
     var horse = this.game.add.sprite(initialXPos,
       (trackHeight * (i+1)) + (16*i) - horseHeight,
       'horse' + this.horseNames[this.gamePlayers[i].playerHorse - 1]);
+    horse.trackLine = i+1;
     horse.horseId = this.gamePlayers[i].playerHorse;
     if(this.gamePlayers[i].playerHorse == this.playerHorseId){
       this.playerHorse = horse;
@@ -467,4 +472,37 @@ HorseRacer.Game.prototype.showFinalPosition = function(position){
   this.finishText.setText(position + "!");
   this.finishGroup.visible = true;
   this.finishGroup.update();
+};
+
+HorseRacer.Game.prototype.showOponentPosition = function(data){
+  var opId = data.horseId;
+  var opPos = data.position;
+  opPos = opPos.replace("Llegaste ", "");
+  opPos = opPos.replace("Eres el", "El");
+  var lineHeight = 64;
+  // console.log("OP ", opId, opPos.replace("Llegaste ", ""));
+  this.horsesGroup.forEach(function(spriteObj, id, pos){
+    if(spriteObj.horseId == id){
+      var opFinishGroup = this.game.add.group(undefined, "op" + id + "FinishGroup");
+      var finishText = this.game.make.text(this.game.world.width/2,
+        (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2),
+        pos,
+        { fill: '#FAFAFA', font:'14pt Arial', align: 'center' });
+      finishText.anchor.set(0.5, 0.5);
+
+      var finishBitmap = new Phaser.BitmapData(this.game, "op" + id + 'finish-background');
+      finishBitmap.ctx.beginPath();
+      finishBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+      finishBitmap.ctx.fillStyle = "#313131";
+      finishBitmap.ctx.fill();
+      var finishSprite = new Phaser.Sprite(this.game, 0, 0, finishBitmap);
+      finishSprite.width = this.game.world.width;
+      finishSprite.height = lineHeight;
+      finishSprite.x = 0;
+      finishSprite.y = lineHeight * (spriteObj.trackLine - 1);
+
+      opFinishGroup.addChild(finishSprite);
+      opFinishGroup.addChild(finishText);
+    }
+  }, this, true, opId, opPos);
 };

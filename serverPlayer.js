@@ -88,6 +88,7 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
 
   var _sendPosition = function(){
     socket.emit("finish reached", {position: finalPosition});
+    socket.broadcast.emit("oponent finished", {horseId: horseName, position: finalPosition});
   };
 
   var _setFinalPosition = function(newPosition){
