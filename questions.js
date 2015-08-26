@@ -305,6 +305,195 @@ var Questions = function(){
         "Amantes",
         "Madre e hijo"
       ]
+    },
+    {
+      question: "En El Padrino I, don Vito llama severamente la atención a su hijo Sonny debido a que:",
+      response: "Dijo lo que pensaba",
+      options: [
+        "Se robó un arma",
+        "Se fue de putas",
+        "Pagó sus deudas"
+      ]
+    },
+    {
+      question: "En Big Fish, Edward Bloom recorre un bosque embrujado y llega a un pueblo llamado:",
+      response: "Spectre",
+      options: [
+        "Stari",
+        "Usme",
+        "Jackson, Alabama"
+      ]
+    },
+    {
+      question: "\"La familia es como un plato de lentejas… siempre te encuentras una negra\" corresponde a:",
+      response: "El Padrino",
+      options: [
+        "La familia de mi novia",
+        "Padre de familia",
+        "Carros de fuego"
+      ]
+    },
+    {
+      question: "La película en la que fue conocida por primera vez Natalie Portman es:",
+      response: "El perfecto asesino",
+      options: [
+        "El cisne negro",
+        "Star Wars",
+        "Closer"
+      ]
+    },
+    {
+      question: "\"La vida es como una caja de bombones\" es una analogía célebre de la película:",
+      response: "Forrest Gump",
+      options: [
+        "Pulp Fiction",
+        "Belleza americana",
+        "Jurassic Park"
+      ]
+    },
+    {
+      question: "La película en la que se hizo famoso el personaje de Hannibal Lecter fue:",
+      response: "El silencio de los inocentes",
+      options: [
+        "Hannibal",
+        "El sexto sentido",
+        "El tigre y el dragón"
+      ]
+    },
+    {
+      question: "El título del episodio IV de la Guerra de las Galaxias es:",
+      response: "Una nueva esperanza",
+      options: [
+        "El regreso del Jedi",
+        "La amenaza fantasma",
+        "El cuarto elemento"
+      ]
+    },
+    {
+      question: "La famosa comedia romántica que hizo célebres a Julia Roberts y Richard Gere es:",
+      response: "Mujer bonita",
+      options: [
+        "Cásate conmigo",
+        "¿Conoces a Joe Black?",
+        "La princesa y el sapo"
+      ]
+    },
+    {
+      question: "¿Quién es el director de la famosa película Terminator?",
+      response: "James Cameron",
+      options: [
+        "Ricarch Gere",
+        "Arnold Schwarzenegger",
+        "Steven Spielberg"
+      ]
+    },
+    {
+      question: "En la película Hombres de Negro, el cínturón de orión hace referencia a:",
+      response: "El collar de un gato",
+      options: [
+        "La constelación de Orión",
+        "Una clave secreta",
+        "Un pasadizo galáctico"
+      ]
+    },
+    {
+      question: "¿Cuál es el nombre del actor que protagoniza Danza con Lobos?",
+      response: "Kevin Costner",
+      options: [
+        "Brad Pitt",
+        "Michael Douglas",
+        "Sean Connery"
+      ]
+    },
+    {
+      question: "En la película Corazón Valiente se cuenta la historia de Independencia de cuál país",
+      response: "Escocia",
+      options: [
+        "Irlanda",
+        "Gales",
+        "Islandia"
+      ]
+    },
+    {
+      question: "En la película Ocean's Eleven, ¿cuál es el nombre del dueño del casino que resulta robado?",
+      response: "Terry Benedict",
+      options: [
+        "Perry Anderson",
+        "Michelle D' Fountain",
+        "Percy Sullivan"
+      ]
+    },
+    {
+      question: "¿Cuál es la empresa de mensajería en la que trabajaba el personaje de Náufrago?",
+      response: "FedEx",
+      options: [
+        "TCC",
+        "UsaPostal",
+        "DHL"
+      ]
+    },
+    {
+      question: "De las siguientes películas de Pixar, ¿cuál es la más antigua?",
+      response: "Toy Story",
+      options: [
+        "Monsters Inc.",
+        "Cars",
+        "Bolt"
+      ]
+    },
+    {
+      question: "¿Quién es el matemático cuya vida se representa en la película Una mente brillante?",
+      response: "John Nash",
+      options: [
+        "Joseph Fourier",
+        "Carl Gauss",
+        "John Neumman"
+      ]
+    },
+    {
+      question: "¿Cuál es la película en la que Jim Carrey se estrena protagonizando drama y no comedia?",
+      response: "El show de Truman",
+      options: [
+        "El eterno resplandor",
+        "Ace Ventura",
+        "Historia de un amor"
+      ]
+    },
+    {
+      question: "En Volver al Futuro, ¿cuál es el año al que se dirigen los personajes cuando van al futuro?",
+      response: "2015",
+      options: [
+        "2010",
+        "2050",
+        "2022"
+      ]
+    },
+    {
+      question: "¿Cuál de las siguientes películas no fue dirigida por Alejandro Gonzáles Iñárritu?",
+      response: "Historias mínimas",
+      options: [
+        "Amores perros",
+        "21 gramos",
+        "Birdman"
+      ]
+    },
+    {
+      question: "¿Cuál es la película animada que protagonizan Bugs Bunny y Michael Jordan?",
+      response: "Space Jam",
+      options: [
+        "Space Jonkie",
+        "Space Dunk",
+        "Quién engañó al conejo"
+      ]
+    },
+    {
+      question: "¿Cuál es la película con la que Emir Kusturica ganó su segunda Palma de Oro en Cannes?",
+      response: "Underground",
+      options: [
+        "El viaje de papá",
+        "Gato negro, gato blanco",
+        "Maradona"
+      ]
     }
     // ,
     // {
