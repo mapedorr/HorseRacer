@@ -102,6 +102,11 @@ HorseRacer.MainMenu.prototype.setEventHandlers = function(){
       _me.startRace(data.gamePlayers);
     }
   });
+
+  this.socket.on("opponent disconnected", function(data){
+    console.log("tengo que volar a este perrosinsangre:", data.horseId);
+    _me.removeOpponent(data.horseId);
+  });
 };
 
 /**
@@ -136,21 +141,32 @@ HorseRacer.MainMenu.prototype.playerConnected = function(data) {
           this.enabledHorses.splice(this.enabledHorses.indexOf(data.connectedPlayers[i].horseId), 1);
           this.disableHorse(data.connectedPlayers[i]);
         }
-      };
+      }
     }
 
-    //Show the name the server give me
+    //Show the name the server gave me
     this.setPlayerName(data.playerName[0]);
 };
 
-//Socket disconnected
+// socket disconnected by the server
 HorseRacer.MainMenu.prototype.playerDisconnected = function() {
-    console.log("Disconnected from socket server");
+  console.log("The fuckin server disconnects me!");
+};
+
+/**
+ * Method that removes a player from the array of players because its
+ * disconnection. This makes enabled its horse if the player hasn't been
+ * selected a horse yet.
+ * 
+ * @param  {number} opponentId    The ID of the horse to remove.
+ */
+HorseRacer.MainMenu.prototype.removeOpponent = function(opponentId){
+  this.horsesGroup.forEach(this._setEnabled, this, true, opponentId);
 };
 
 //New player
 HorseRacer.MainMenu.prototype.opponentHorseSelected = function(data) {
-    this.disableHorse(data);
+  this.disableHorse(data);
 };
 
 HorseRacer.MainMenu.prototype.startRace = function(gamePlayers){
@@ -170,6 +186,19 @@ HorseRacer.MainMenu.prototype._setDisabled = function(spriteObj, data){
       spriteObj.frame = 2;
       this.showPlayerName(spriteObj, data.name);
     }
+  }
+};
+
+HorseRacer.MainMenu.prototype._setEnabled = function(spriteObj, horseId){
+  if(spriteObj.horseId == horseId){
+    if(this.pickedHorse){
+      spriteObj.frame = 1;
+    }else{
+      spriteObj.frame = 0;
+      spriteObj.inputEnabled = true;
+      spriteObj.input.useHandCursor = true;
+    }
+    this.hidePlayerName(spriteObj);
   }
 };
 
@@ -197,6 +226,12 @@ HorseRacer.MainMenu.prototype.showPlayerName = function(spriteObj, name){
   this.textBitmapsGroup.add(this.playerHorseTextBitmap);
 
   spriteObj.addChild(this.textBitmapsGroup);
+};
+
+HorseRacer.MainMenu.prototype.hidePlayerName = function(spriteObj){
+  if(spriteObj.children && spriteObj.children.length > 0){
+    spriteObj.removeChildAt(spriteObj.children.length-1);
+  }
 };
 
 function render () {

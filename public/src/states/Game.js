@@ -59,8 +59,12 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
     _me.showFinalPosition(data.position);
   });
 
-  this.socket.on("oponent finished", function(data){
-    _me.showOponentPosition(data);
+  this.socket.on("opponent finished", function(data){
+    _me.showOpponentPosition(data);
+  });
+
+  this.socket.on("opponent disconnected", function(data){
+    _me.removeOpponent(data);
   });
 
 };
@@ -474,7 +478,7 @@ HorseRacer.Game.prototype.showFinalPosition = function(position){
   this.finishGroup.update();
 };
 
-HorseRacer.Game.prototype.showOponentPosition = function(data){
+HorseRacer.Game.prototype.showOpponentPosition = function(data){
   var opId = data.horseId;
   var opPos = data.position;
   opPos = opPos.replace("Llegaste ", "");

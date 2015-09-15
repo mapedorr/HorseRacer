@@ -53,7 +53,8 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
 
   // Socket client has disconnected
   var _onClientDisconnect = function() {
-    console.log("Player has disconnected: " + id);
+    // notify the host game that the player is disconnected
+    hostGame.disconnectPlayer(id);
   };
 
   // answered the question, notify this to all
@@ -88,7 +89,7 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
 
   var _sendPosition = function(){
     socket.emit("finish reached", {position: finalPosition});
-    socket.broadcast.emit("oponent finished", {horseId: horseName, position: finalPosition});
+    socket.broadcast.emit("opponent finished", {horseId: horseName, position: finalPosition});
   };
 
   var _setFinalPosition = function(newPosition){
@@ -103,6 +104,10 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     return socket;
   };
 
+  var _getId = function(){
+    return id;
+  };
+
   // Define which variables and methods can be accessed
   return {
     getHorseName: _getHorseName,
@@ -112,7 +117,7 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     getSocket: _getSocket,
     setFinalPosition: _setFinalPosition,
     getFinalPosition: _getFinalPosition,
-    id: id,
+    getId: _getId,
     onHorseSelected: _onHorseSelected,
     onClientDisconnect: _onClientDisconnect,
     onAnswerQuestion: _onAnswerQuestion,

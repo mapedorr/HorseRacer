@@ -6,31 +6,39 @@ var Questions = require("./questions").Questions;
 
 var Game = function(_gameId){
   var gameId = _gameId;
-  var GAME_STATES = {
-    CREATED: 'c',
-    WAITING: 'w',
-    STARTED: 's',
-    PLAYING: 'p',
-    ENDED: 'e'
-  };
+  var GAME_STATES = {CREATED: 0, WAITING: 1, STARTED: 2, ENDED: 4};
   var currentState = GAME_STATES.CREATED;
   var playerNames = ["Naked Snake", "Venom Snake", "Major Tom", "Major Zero", "Solid Snake", "Eva", "The Pain", "The Fear", "The End", "The Fury", "The Sorrow", "The Joy", "The Boss", "Big Boss", "Sniper Wolf", "Crying Wolf", "Raiden", "Vamp", "Gray Fox"];
   var players = null;
   var readyPlayers = 0;
   var QuestionsObj = new Questions();
   var currentQuestion = null;
-  var playersPerGame = 4;
+  var playersPerGame = 3;
   var movedPlayers = 0;
-  var movementAmounts = [32*2, 22*2, 12*2, 5*2];
+  var movementAmounts = [64, 44, 24, 10];
   var responseOrder = -1;
   var gameWorldWidth = 320;
   var playersWhoEnded = 0;
   var playersAnswering = 0;
-  var positionTexts = {
-    "1": "Primero",
-    "2": "Segundo",
-    "3": "Tercero"
-  };
+  var positionTexts = {"1": "Primero", "2": "Segundo", "3": "Tercero"};
+
+  /**
+   * Function that go over the array of players and calls the received function
+   * to operate over it.
+   * 
+   * @param  {Function} cb    The function to call for each element.
+   */
+  function goOverPlayers(cb){
+    for(var i=0; i<players.length; i++){
+      var action = cb(players[i], i);
+      if(!action || action == 'continue'){
+        continue;
+      }
+      if(action == 'break'){
+        break;
+      }
+    }
+  }
 
   /**
    * Method that adds a player to the game.
@@ -77,47 +85,78 @@ var Game = function(_gameId){
     }
   };
 
+  /**
+   * Function that disconnets a player from the current game and notify the
+   * other players this action.
+   * 
+   * @param  {string} playerId    The ID of the player to disconnect.
+   */
+  var _disconnectPlayer = function(playerId){
+    var playerName = null;
+    // remove the player from the array
+    goOverPlayers(function(player, index){
+      if(player.getId() == playerId){
+        // TODO: remove the socket or destroy it!!!
+        playerName = player.getHorseName();
+        players.splice(index, 1);
+        return "break";
+      }
+    });
+
+    // notify to other players the opponent disconnection
+    goOverPlayers(function(player, index){
+      (player.getSocket()).emit("opponent disconnected", {horseId: playerName});
+    });
+  };
+
   var _getConnectedPlayers = function(){
     var connectedPlayers = [];
-    for (var i = 0; i < players.length - 1; i++) {
+
+    goOverPlayers(function(player, index){
       connectedPlayers.push({
-        horseId: players[i].getHorseName(),
-        name: (players[i].getName())[0]
+        horseId: player.getHorseName(),
+        name: (player.getName())[0]
       });
-    };
+    });
+
     return connectedPlayers;
   };
 
   var _getPlayerById = function(id) {
-    for (var i = 0; i < players.length; i++) {
-      if (players[i].id == id)
-        return players[i];
-    };
-    
-    return false;
+    var response = false;
+
+    goOverPlayers(function(player, index){
+      if (player.getId() == id){
+        response = player;
+        return 'break';
+      }
+    });
+
+    return response;
   };
 
   var _playerSelectHorse = function(playerSocket){
     var playersWithHorse = 0;
-    for(var i=0; i<players.length; i++){
-      if(players[i].getHorseName()){
+    goOverPlayers(function(player, index){
+      if(player.getHorseName()){
         playersWithHorse++;
       }
-    }
+    });
 
     if(playersWithHorse === playersPerGame){
-      //Notify to the players that the game have to start
+      // notify to the players that the game have to start
       currentState = GAME_STATES.STARTED;
       var playersData = [];
-      for (var i = 0; i < players.length; i++) {
+      goOverPlayers(function(player, index){
         playersData.push({
-          playerName: (players[i].getName())[0],
-          playerHorse: players[i].getHorseName()
+          playerName: (player.getName())[0],
+          playerHorse: player.getHorseName()
         });
-      };
-      for (var i = 0; i < players.length; i++) {
-        (players[i].getSocket()).emit("start race", {gamePlayers: playersData});
-      }
+      });
+
+      goOverPlayers(function(player, index){
+        (player.getSocket()).emit("start race", {gamePlayers: playersData});
+      });
     }
   };
 
@@ -176,9 +215,9 @@ var Game = function(_gameId){
     // reset the response order indicator
     responseOrder = -1;
 
-    for (var i = 0; i < players.length; i++) {
-      (players[i].getSocket()).emit("receive question", {question: _question});
-    }
+    goOverPlayers(function(player, index){
+      (player.getSocket()).emit("receive question", {question: _question});
+    });
   };
 
   var _verifyAndCalculate = function(response){
@@ -201,46 +240,52 @@ var Game = function(_gameId){
   };
 
   var _getPodiumPositionText = function(){
-    // if(playersWhoEnded == players.length){
-    //   return "Eres el burro";
-    // }
     return "Llegaste " + positionTexts[playersWhoEnded];
   };
 
   var _verifyGameEnded = function(){
+    var response = false;
     if(playersWhoEnded == players.length-1){
-      for(var i=0; i<players.length; i++){
-        if(!players[i].getFinalPosition()){
-          players[i].setFinalPosition("Eres el burro");
-          players[i].sendPosition();
-          return true;
-          break;
+      goOverPlayers(function(player, index){
+        if(!player.getFinalPosition()){
+          player.setFinalPosition("Eres el burro");
+          player.sendPosition();
+          response = true;
+          return 'break';
         }
-      }
+      });
     }
-    return false;
+    return response;
   };
 
   var _canHostPlayer = function(){
-    if(players 
-        && players.length === playersPerGame){
+    if(players && 
+        (players.length === playersPerGame ||
+          currentState === GAME_STATES.STARTED ||
+          currentState === GAME_STATES.ENDED
+        )
+      ){
       return false;
     }
     return true;
   };
 
   var _verifyNameAvailability = function(nameToValidate){
-    for(var i=0; i<players.length; i++){
-      if(players[i].getHorseName() && players[i].getHorseName() == nameToValidate){
-        return false;
-      }
-    }
+    var response = true;
 
-    return true;
+    goOverPlayers(function(player, index){
+      if(player.getHorseName() && player.getHorseName() == nameToValidate){
+        response = false;
+        return 'break';
+      }
+    });
+
+    return response;
   };
 
   return {
     addPlayer: _addPlayer,
+    disconnectPlayer: _disconnectPlayer,
     getConnectedPlayers: _getConnectedPlayers,
     playerSelectHorse: _playerSelectHorse,
     verifyAndCalculate: _verifyAndCalculate,
