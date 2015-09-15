@@ -96,7 +96,7 @@ var Game = function(_gameId){
     // remove the player from the array
     goOverPlayers(function(player, index){
       if(player.getId() == playerId){
-        // TODO: remove the socket or destroy it!!!
+        player.getSocket().disconnect();
         playerName = player.getHorseName();
         players.splice(index, 1);
         return "break";
