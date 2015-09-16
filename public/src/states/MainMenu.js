@@ -104,7 +104,7 @@ HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   });
 
   this.socket.on("opponent disconnected", function(data){
-    console.log("tengo que volar a este perrosinsangre:", data.horseId);
+    console.log("-----------------------[1]-----------------------");
     _me.removeOpponent(data.horseId);
   });
 };

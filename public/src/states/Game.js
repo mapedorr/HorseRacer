@@ -17,6 +17,9 @@ HorseRacer.Game = function(game){
   this.movedHorses = 0;
   this.raceTrackHeight = 0;
   this.timerSpriteX = 0;
+
+
+  // ugly elements for drawing rectangles with texts
   this.questionGroup = null;
   this.questionTextBackground = null;
   this.questionTextObj = null;
@@ -64,7 +67,8 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
   });
 
   this.socket.on("opponent disconnected", function(data){
-    _me.removeOpponent(data);
+    console.log("-----------------------[2]-----------------------");
+    _me.removeOpponent(data.horseId);
   });
 
 };
@@ -93,6 +97,7 @@ HorseRacer.Game.prototype.create = function(){
       'horse' + this.horseNames[this.gamePlayers[i].playerHorse - 1]);
     horse.trackLine = i+1;
     horse.horseId = this.gamePlayers[i].playerHorse;
+    horse.running = true;
     if(this.gamePlayers[i].playerHorse == this.playerHorseId){
       this.playerHorse = horse;
     }else{
@@ -509,4 +514,57 @@ HorseRacer.Game.prototype.showOpponentPosition = function(data){
       opFinishGroup.addChild(finishText);
     }
   }, this, true, opId, opPos);
+};
+
+/**
+ * Method that removes an oponnet because it lose the connection with the server
+ * or something similar.
+ * 
+ * @param  {number} horseId     The ID of the opponent to disconnect.
+ */
+HorseRacer.Game.prototype.removeOpponent = function(horseId){
+  console.log("Tengo que sacar a: ", horseId);
+  var lineHeight = 64;
+  // go over the opponents array to disconnect the correct one
+  this.horsesGroup.forEach(function(spriteObj, _horseId, pos){
+    if(spriteObj.horseId == _horseId){
+      // mark the horse as NOT RUNNING
+      spriteObj.running = false;
+      
+      // stope drawing the horse sprite of the disconnected player
+      spriteObj.visible = false;
+      
+      // draw the disconnection label for the disconnected horse
+      var opDisconnectedGroup = this.game.add.group(undefined, "op" + _horseId + "DisconnectedGroup");
+      var disconnectedText = this.game.make.text(
+        this.game.world.width/2,
+        (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2),
+        "Me voy. Mi planeta me necesita.",
+        { fill: '#FFFF00', font:'14pt Arial', align: 'center' });
+      disconnectedText.anchor.set(0.5, 0.5);
+
+      var finishBitmap = new Phaser.BitmapData(this.game, "op" + _horseId + 'disconnected-background');
+      finishBitmap.ctx.beginPath();
+      finishBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+      finishBitmap.ctx.fillStyle = "#CC170A";
+      finishBitmap.ctx.fill();
+      var finishSprite = new Phaser.Sprite(this.game, 0, 0, finishBitmap);
+      finishSprite.width = this.game.world.width;
+      finishSprite.height = lineHeight;
+      finishSprite.x = 0;
+      finishSprite.y = lineHeight * (spriteObj.trackLine - 1);
+
+      opDisconnectedGroup.addChild(finishSprite);
+      opDisconnectedGroup.addChild(disconnectedText);
+
+    }
+  }, this, true, horseId);
+
+  // remove the player from the array of players
+  for (var i = 0; i < this.gamePlayers.length; i++) {
+    if(this.gamePlayers[i].playerHorse == horseId){
+      this.gamePlayers.splice(i, 1);
+      break;
+    }
+  };
 };
