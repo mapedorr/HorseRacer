@@ -93,12 +93,13 @@ var Game = function(_gameId){
    */
   var _disconnectPlayer = function(playerId){
     var playerName = null;
-    // remove the player from the array
+    // remove the player from the array and disconnects its socket
     goOverPlayers(function(player, index){
       if(player.getId() == playerId){
         player.getSocket().disconnect();
         playerName = player.getHorseName();
         players.splice(index, 1);
+        playersAnswering--;
         return "break";
       }
     });
