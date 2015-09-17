@@ -104,7 +104,6 @@ HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   });
 
   this.socket.on("opponent disconnected", function(data){
-    console.log("-----------------------[1]-----------------------");
     _me.removeOpponent(data.horseId);
   });
 };
@@ -170,6 +169,7 @@ HorseRacer.MainMenu.prototype.opponentHorseSelected = function(data) {
 };
 
 HorseRacer.MainMenu.prototype.startRace = function(gamePlayers){
+  this.socket.removeListener("opponent disconnected");
   this.state.start('Game', true, false, gamePlayers, this.pickedHorse, this.socket);
 };
 

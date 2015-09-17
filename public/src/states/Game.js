@@ -67,7 +67,6 @@ HorseRacer.Game.prototype.init = function(gamePlayers, pickedHorseKey, socket){
   });
 
   this.socket.on("opponent disconnected", function(data){
-    console.log("-----------------------[2]-----------------------");
     _me.removeOpponent(data.horseId);
   });
 
@@ -97,6 +96,7 @@ HorseRacer.Game.prototype.create = function(){
       'horse' + this.horseNames[this.gamePlayers[i].playerHorse - 1]);
     horse.trackLine = i+1;
     horse.horseId = this.gamePlayers[i].playerHorse;
+    horse.horseName = this.gamePlayers[i].playerName;
     horse.running = true;
     if(this.gamePlayers[i].playerHorse == this.playerHorseId){
       this.playerHorse = horse;
@@ -104,7 +104,10 @@ HorseRacer.Game.prototype.create = function(){
       this.enemyHorses.push(horse);
     }
     this.horsesGroup.add(horse);
+
+    this.drawName(horse);
   };
+  this.game.world.bringToTop(this.horsesGroup);
 
   // define the style that will use the question text
   this.questionTextStyle = {
@@ -272,6 +275,25 @@ HorseRacer.Game.prototype.create = function(){
 
   // notify to the server that I am ready for receiving a question
   this.socket.emit("ready to play");
+};
+
+HorseRacer.Game.prototype.drawName = function(spriteObj){
+  // draw the disconnection label for the disconnected horse
+  var lineHeight = 64;
+  var opDisconnectedGroup = this.game.add.group(undefined, "op" + spriteObj.horseId + "DisconnectedGroup");
+  var text = spriteObj.horseName;
+  if(this.playerHorseId == spriteObj.horseId){
+    text = "Yo, " + text;
+  }
+  var disconnectedText = this.game.make.text(
+    this.game.world.width/2,
+    (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2) - 5,
+    text,
+    { fill: '#000000', font:'25pt Arial', fontWeight: 'bold', align: 'center' });
+  disconnectedText.anchor.set(0.5, 0.5);
+  disconnectedText.alpha = 0.4;
+
+  opDisconnectedGroup.addChild(disconnectedText);
 };
 
 /**
@@ -524,7 +546,6 @@ HorseRacer.Game.prototype.showOpponentPosition = function(data){
  * @param  {number} horseId     The ID of the opponent to disconnect.
  */
 HorseRacer.Game.prototype.removeOpponent = function(horseId){
-  console.log("Tengo que sacar a: ", horseId);
   var lineHeight = 64;
   // go over the opponents array to disconnect the correct one
   this.horsesGroup.forEach(function(spriteObj, _horseId, pos){
