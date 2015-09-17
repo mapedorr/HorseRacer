@@ -108,6 +108,12 @@ var Game = function(_gameId){
     goOverPlayers(function(player, index){
       (player.getSocket()).emit("opponent disconnected", {horseId: playerName});
     });
+
+    // verify if it is necessary to send a question
+    if(movedPlayers == playersAnswering){
+      movedPlayers = 0;
+      _sendRandomQuestion();
+    }
   };
 
   var _getConnectedPlayers = function(){

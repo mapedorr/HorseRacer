@@ -349,6 +349,7 @@ HorseRacer.Game.prototype.moveHorse = function(movementAmount){
 HorseRacer.Game.prototype.moveOpponentHorse = function(horseId, movementAmount){
   for (var i = 0; i < this.enemyHorses.length; i++) {
     if(this.enemyHorses[i].horseId == horseId){
+      this.enemyHorses[i].moved = true;
       this.game.add.tween(this.enemyHorses[i]).to(
         {x: this.enemyHorses[i].x + movementAmount},
         1000,
@@ -557,6 +558,10 @@ HorseRacer.Game.prototype.removeOpponent = function(horseId){
       opDisconnectedGroup.addChild(finishSprite);
       opDisconnectedGroup.addChild(disconnectedText);
 
+      // call the method that register the opponent movement if necessary
+      if(!spriteObj.moved){
+        this.horseMoved();
+      }
     }
   }, this, true, horseId);
 
