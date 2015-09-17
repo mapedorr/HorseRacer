@@ -539,7 +539,7 @@ HorseRacer.Game.prototype.removeOpponent = function(horseId){
       var disconnectedText = this.game.make.text(
         this.game.world.width/2,
         (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2),
-        "Me voy. Mi planeta me necesita.",
+        "Debo irme, mi planeta me necesita.",
         { fill: '#FFFF00', font:'14pt Arial', align: 'center' });
       disconnectedText.anchor.set(0.5, 0.5);
 
