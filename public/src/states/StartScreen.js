@@ -9,7 +9,6 @@ HorseRacer.StartScreen.prototype.preload = function(){
 };
 
 HorseRacer.StartScreen.prototype.create = function(){
-  //  this.startScreenImage = this.add.image(this.world.width/2, this.world.height/2 - 65, 'start_screen');
   this.startScreenImage = this.add.image(this.world.width/2, 0, 'start_screen');
   this.startScreenImage.anchor.set(0.5, 0);
   this.playButton = this.add.button(this.world.width/2 - 200, 

@@ -6,6 +6,7 @@ HorseRacer.Game = function(game){
   this.socket = null;
   this.gamePlayers = null;
   this.horseNames = ["Amateur", "Rocky", "Yegua", "Viejo"];
+  this.fontColors = ["#d67420", "#7d4731", "#a96d7d", "#848484"];
   this.enemyHorses = [];
   this.horsesGroup = null;
   this.raceTracks = null;
@@ -289,7 +290,7 @@ HorseRacer.Game.prototype.drawName = function(spriteObj){
     this.game.world.width/2,
     (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2) - 5,
     text,
-    { fill: '#000000', font:'25pt Arial', fontWeight: 'bold', align: 'center' });
+    { fill: this.fontColors[spriteObj.horseId - 1], font:'25pt Arial', fontWeight: 'bold', align: 'center' });
   disconnectedText.anchor.set(0.5, 0.5);
   disconnectedText.alpha = 0.4;
 
@@ -562,13 +563,13 @@ HorseRacer.Game.prototype.removeOpponent = function(horseId){
         this.game.world.width/2,
         (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2),
         "Debo irme, mi planeta me necesita.",
-        { fill: '#FFFF00', font:'14pt Arial', align: 'center' });
+        { fill: '#D0EB55', font:'15pt Arial', align: 'center' });
       disconnectedText.anchor.set(0.5, 0.5);
 
       var finishBitmap = new Phaser.BitmapData(this.game, "op" + _horseId + 'disconnected-background');
       finishBitmap.ctx.beginPath();
       finishBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
-      finishBitmap.ctx.fillStyle = "#CC170A";
+      finishBitmap.ctx.fillStyle = "#9A2519";
       finishBitmap.ctx.fill();
       var finishSprite = new Phaser.Sprite(this.game, 0, 0, finishBitmap);
       finishSprite.width = this.game.world.width;

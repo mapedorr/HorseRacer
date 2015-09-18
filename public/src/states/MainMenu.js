@@ -67,10 +67,6 @@ HorseRacer.MainMenu.prototype.create = function(){
 
 };
 
-HorseRacer.MainMenu.prototype.update = function(){
-  //@TODO
-};
-
 HorseRacer.MainMenu.prototype.setEventHandlers = function(){
   var _me = this;
 
@@ -211,18 +207,27 @@ HorseRacer.MainMenu.prototype.showPlayerName = function(spriteObj, name){
   this.textBitmapsGroup = this.game.make.group();
 
   //Draw the player name
-  this.playerNameTextBitmap = this.game.make.bitmapText(spriteObj.width / 2, 16, this.fontId, name, 12);
-  this.playerNameTextBitmap.anchor.set(0.5, 0.5);
-  this.playerNameTextBitmap.align = "center";
-  this.playerNameTextBitmap.tint = 0xfafafa;
+  if(spriteObj.horseId == this.pickedHorse){
+    this.playerNameTextBitmap = this.game.make.bitmapText(spriteObj.width / 2,
+      16,
+      this.fontId,
+      "Eres",
+      10);
+    this.playerNameTextBitmap.anchor.set(0.5, 0.5);
+    this.playerNameTextBitmap.align = "center";
+    this.playerNameTextBitmap.tint = 0xe5e5e5;
+    this.textBitmapsGroup.add(this.playerNameTextBitmap);
+  }
 
   //Draw the funny text
-  this.playerHorseTextBitmap = this.game.make.bitmapText(spriteObj.width / 2, 40, this.fontId, "es " + spriteObj.horseName, 10);
+  this.playerHorseTextBitmap = this.game.make.bitmapText(spriteObj.width / 2,
+    (spriteObj.horseId == this.pickedHorse) ? 40 : 30,
+    this.fontId,
+    name,
+    12);
   this.playerHorseTextBitmap.anchor.set(0.5, 0.5);
   this.playerHorseTextBitmap.align = "center";
-  this.playerHorseTextBitmap.tint = 0xe5e5e5;
-
-  this.textBitmapsGroup.add(this.playerNameTextBitmap);
+  this.playerHorseTextBitmap.tint = 0xfafafa;
   this.textBitmapsGroup.add(this.playerHorseTextBitmap);
 
   spriteObj.addChild(this.textBitmapsGroup);
