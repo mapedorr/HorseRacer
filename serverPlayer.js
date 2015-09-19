@@ -1,17 +1,48 @@
+var Utils = require("./utils").Utils;
+
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
 var Player = function(playerId, playerName, playerSocket, hostGame) {
-  var id = playerId;
+  var id = playerId || hostGame.getConnectedPlayers().length + 1;
   var name = playerName;
   var socket = playerSocket;
   var horseName = "";
   var hostGame = hostGame;
   var madeMovement = 0;
   var finalPosition = null;
+  var isBot = playerSocket == null || playerSocket == undefined;
 
-  //-----------------------
-  //Getters and setters
+  // ----------------------
+  // bot functions
+  var _botSelectHorse = function(){
+    // create a random timer to pick a horse
+    setTimeout(function(){
+      do{
+        _onHorseSelected({name: Math.floor((Math.random()*4) + 1)});
+      }while(!horseName);
+      hostGame.playerReady();
+    }, Utils.getRandomInt(2, 4) * 1000);
+  };
+
+  var _botAnswerQuestion = function(){
+    // create a random timer to pick a horse
+    setTimeout(function(){
+      var r = Utils.getRandomInt(1, 4);
+      var proba = Math.random();
+      if(proba <= 0.8){
+        // pick the correct answer
+        r = hostGame.getCorrectAnswer();
+      }
+      _onAnswerQuestion({
+        response: r,
+        responseTime: 1
+      });
+    }, Utils.getRandomInt(2, 6) * 1000);
+  };
+
+  // -----------------------
+  // getters and setters
   var _getHorseName = function() {
     return horseName;
   };
@@ -39,16 +70,25 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     }
 
     _setHorseName(data.name);
-    socket.emit("valid horse");
+    if(isBot == false){
+      socket.emit("valid horse");
+      // broadcast selected horse to connected sockets
+      // socket.broadcast.emit("opponent horse selected", {
+      //   horseId: horseName,
+      //   name: name[0]
+      // });
+    }
 
-    //Broadcast selected horse to connected sockets
-    socket.broadcast.emit("opponent horse selected", {
-      horseId: horseName,
-      name: name[0]
-    });
+    hostGame.emitToOthers(id,
+      "opponent horse selected",
+      {
+        horseId: horseName,
+        name: name[0]
+      }
+    );
 
     //Notify to the host game that the player has selected its horse
-    hostGame.playerSelectHorse(socket);
+    hostGame.playerSelectHorse();
   };
 
   // Socket client has disconnected
@@ -69,8 +109,22 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     }
 
     madeMovement += movementDistance;
-    socket.emit("move horse", {amount: movementDistance});
-    socket.broadcast.emit("move opponent", {horseId: horseName, amount: movementDistance});
+    if(isBot == false){
+      socket.emit("move horse", {amount: movementDistance});
+      // socket.broadcast.emit("move opponent", {horseId: horseName, amount: movementDistance});
+    }else{
+      // bots moves their horses as fast as light
+      setTimeout(_onHorseMoved, 1000);
+    }
+
+    hostGame.emitToOthers(id,
+      "move opponent",
+      {
+        horseId: horseName,
+        amount: movementDistance
+      }
+    );
+
   };
 
   var _onHorseMoved = function(){
@@ -88,8 +142,18 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
   };
 
   var _sendPosition = function(){
-    socket.emit("finish reached", {position: finalPosition});
-    socket.broadcast.emit("opponent finished", {horseId: horseName, position: finalPosition});
+    if(isBot == false){
+      socket.emit("finish reached", {position: finalPosition});
+      // socket.broadcast.emit("opponent finished", {horseId: horseName, position: finalPosition});
+    }
+
+    hostGame.emitToOthers(id,
+      "opponent finished",
+      {
+        horseId: horseName,
+        position: finalPosition
+      }
+    );
   };
 
   var _setFinalPosition = function(newPosition){
@@ -108,6 +172,10 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     return id;
   };
 
+  var _getIsBot = function(){
+    return isBot;
+  };
+
   // Define which variables and methods can be accessed
   return {
     getHorseName: _getHorseName,
@@ -122,7 +190,10 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     onClientDisconnect: _onClientDisconnect,
     onAnswerQuestion: _onAnswerQuestion,
     onHorseMoved: _onHorseMoved,
-    sendPosition: _sendPosition
+    sendPosition: _sendPosition,
+    botSelectHorse: _botSelectHorse,
+    botAnswerQuestion: _botAnswerQuestion,
+    getIsBot: _getIsBot
   }
 
 };

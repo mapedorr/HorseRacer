@@ -12,9 +12,7 @@ HorseRacer.MainMenu = function(game){
   this.enabledHorses = [];
   this.socket = null;
   this.spriteObjTemp = null;
-};
-
-HorseRacer.MainMenu.prototype.preload = function(){
+  this.pickHorseGroup = null;
 };
 
 HorseRacer.MainMenu.prototype.create = function(){
@@ -62,6 +60,9 @@ HorseRacer.MainMenu.prototype.create = function(){
   horseThumb.input.useHandCursor = true;
   horseThumb.events.onInputDown.add(this.pickHorse, this);
   this.enabledHorses.push(horseThumb.horseId);
+
+  // draw pick a horse text
+  this.drawPickHorse();
 
   this.setEventHandlers();
 
@@ -117,6 +118,7 @@ HorseRacer.MainMenu.prototype.pickHorse = function(spriteObj, pointer){
 
 HorseRacer.MainMenu.prototype.disablePlickedHorse = function(){
   this.pickedHorse = this.spriteObjTemp.horseId;
+  this.pickHorseGroup.visible = false;
   //Disable the picked horse
   this._setDisabled(this.spriteObjTemp, {horseId: this.spriteObjTemp.horseId, name: this.playerName});
 
@@ -239,5 +241,25 @@ HorseRacer.MainMenu.prototype.hidePlayerName = function(spriteObj){
   }
 };
 
-function render () {
-}
+HorseRacer.MainMenu.prototype.drawPickHorse = function(){
+  this.pickHorseGroup = this.game.add.group(undefined, "pickHorseGroup");
+  var pickHorseText = this.game.make.text(this.game.world.width/2,
+    this.game.world.height - 15,
+    "Selecciona un caballo",
+    { fill: '#313131', font:'18pt Arial', align: 'center' });
+  pickHorseText.anchor.set(0.5, 0.5);
+
+  var pickHorseBitmap = new Phaser.BitmapData(this.game, "pickHorse-background");
+  pickHorseBitmap.ctx.beginPath();
+  pickHorseBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
+  pickHorseBitmap.ctx.fillStyle = "#dd5f00";
+  pickHorseBitmap.ctx.fill();
+  var pickHorseSprite = new Phaser.Sprite(this.game, 0, 0, pickHorseBitmap);
+  pickHorseSprite.width = this.game.world.width;
+  pickHorseSprite.height = 40;
+  pickHorseSprite.x = 0;
+  pickHorseSprite.y = this.game.world.height - 40;
+
+  this.pickHorseGroup.addChild(pickHorseSprite);
+  this.pickHorseGroup.addChild(pickHorseText);
+};

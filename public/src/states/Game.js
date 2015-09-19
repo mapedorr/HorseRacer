@@ -505,28 +505,33 @@ HorseRacer.Game.prototype.showFinalPosition = function(position){
   this.finishText.setText(position + "!");
   this.finishGroup.visible = true;
   this.finishGroup.update();
+
+  // cover the track of my horse
+  this.showOpponentPosition({horseId: this.playerHorseId});
 };
 
 HorseRacer.Game.prototype.showOpponentPosition = function(data){
   var opId = data.horseId;
   var opPos = data.position;
-  opPos = opPos.replace("Llegaste ", "");
-  opPos = opPos.replace("Eres el", "El");
+  if(opPos){
+    opPos = opPos.replace("Llegaste ", "");
+    opPos = opPos.replace("Eres el", "El");
+  }
   var lineHeight = 64;
-  // console.log("OP ", opId, opPos.replace("Llegaste ", ""));
+
   this.horsesGroup.forEach(function(spriteObj, id, pos){
     if(spriteObj.horseId == id){
       var opFinishGroup = this.game.add.group(undefined, "op" + id + "FinishGroup");
       var finishText = this.game.make.text(this.game.world.width/2,
         (lineHeight * (spriteObj.trackLine - 1)) + (lineHeight/2),
-        pos,
-        { fill: '#FAFAFA', font:'14pt Arial', align: 'center' });
+        pos || '',
+        { fill: '#181716', font:'25pt Arial', fontWeight: 'bold', align: 'center' });
       finishText.anchor.set(0.5, 0.5);
 
       var finishBitmap = new Phaser.BitmapData(this.game, "op" + id + 'finish-background');
       finishBitmap.ctx.beginPath();
       finishBitmap.ctx.rect(0, 0, this.game.world.width, this.game.world.height);
-      finishBitmap.ctx.fillStyle = "#313131";
+      finishBitmap.ctx.fillStyle = this.fontColors[spriteObj.horseId - 1];
       finishBitmap.ctx.fill();
       var finishSprite = new Phaser.Sprite(this.game, 0, 0, finishBitmap);
       finishSprite.width = this.game.world.width;

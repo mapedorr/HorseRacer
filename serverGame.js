@@ -12,6 +12,7 @@ var Game = function(_gameId){
   var players = null;
   var readyPlayers = 0;
   var QuestionsObj = new Questions();
+  var totalQuestions = QuestionsObj.getQuestions().length;
   var currentQuestion = null;
   var playersPerGame = 4;
   var movedPlayers = 0;
@@ -21,6 +22,9 @@ var Game = function(_gameId){
   var playersWhoEnded = 0;
   var playersAnswering = 0;
   var positionTexts = {"1": "Primero", "2": "Segundo", "3": "Tercero"};
+
+  var botTimer = null;
+  var bots = [];
 
   /**
    * Function that go over the array of players and calls the received function
@@ -60,23 +64,29 @@ var Game = function(_gameId){
       }
       // pick a random name for the player
       var playerName = playerNames.splice(parseInt(Math.random() * playerNames.length), 1);
-      var newPlayer = new Player(socketObj.id, playerName, socketObj, this);
+      var newPlayer = new Player((socketObj) ? socketObj.id : null, playerName, socketObj, this);
       players.push(newPlayer);
 
-      // listen for new player message
-      socketObj.on("horse selected", newPlayer.onHorseSelected);
+      if(socketObj){
+        // listen for new player message
+        socketObj.on("horse selected", newPlayer.onHorseSelected);
 
-      // listen for client disconnected
-      socketObj.on("disconnect", newPlayer.onClientDisconnect);
+        // listen for client disconnected
+        socketObj.on("disconnect", newPlayer.onClientDisconnect);
 
-      // listen for client ready to receive questions
-      socketObj.on("ready to play", _playerReady);
+        // listen for client ready to receive questions
+        socketObj.on("ready to play", _playerReady);
 
-      // listen for question request
-      socketObj.on("horse moved", newPlayer.onHorseMoved);
+        // listen for question request
+        socketObj.on("horse moved", newPlayer.onHorseMoved);
 
-      // listen for player answer
-      socketObj.on("answer question", newPlayer.onAnswerQuestion);
+        // listen for player answer
+        socketObj.on("answer question", newPlayer.onAnswerQuestion);
+      }else{
+        // is a bot, put it on the bots array
+        bots.push(newPlayer);
+        newPlayer.botSelectHorse();
+      }
 
       return {socket: socketObj, name: newPlayer.getName()};
     }else{
@@ -99,18 +109,23 @@ var Game = function(_gameId){
         player.getSocket().disconnect();
         playerName = player.getHorseName();
         players.splice(index, 1);
-        playersAnswering--;
+        if(currentState == GAME_STATES.STARTED){
+          playersAnswering--;
+        }
         return "break";
       }
     });
 
     // notify to other players the opponent disconnection
     goOverPlayers(function(player, index){
-      (player.getSocket()).emit("opponent disconnected", {horseId: playerName});
+      if(player.getIsBot() == false){
+        (player.getSocket()).emit("opponent disconnected", {horseId: playerName});
+      }
     });
 
     // verify if it is necessary to send a question
-    if(movedPlayers == playersAnswering){
+    if(currentState == GAME_STATES.STARTED && 
+        movedPlayers == playersAnswering){
       movedPlayers = 0;
       _sendRandomQuestion();
     }
@@ -142,7 +157,7 @@ var Game = function(_gameId){
     return response;
   };
 
-  var _playerSelectHorse = function(playerSocket){
+  var _playerSelectHorse = function(){
     var playersWithHorse = 0;
     goOverPlayers(function(player, index){
       if(player.getHorseName()){
@@ -162,7 +177,9 @@ var Game = function(_gameId){
       });
 
       goOverPlayers(function(player, index){
-        (player.getSocket()).emit("start race", {gamePlayers: playersData});
+        if(player.getIsBot() == false){
+          (player.getSocket()).emit("start race", {gamePlayers: playersData});
+        }
       });
     }
   };
@@ -223,7 +240,12 @@ var Game = function(_gameId){
     responseOrder = -1;
 
     goOverPlayers(function(player, index){
-      (player.getSocket()).emit("receive question", {question: _question});
+      if(player.getIsBot() == false){
+        (player.getSocket()).emit("receive question", {question: _question});
+      }else{
+        // start the timer to pick an answer
+        player.botAnswerQuestion();
+      }
     });
   };
 
@@ -255,12 +277,13 @@ var Game = function(_gameId){
     if(playersWhoEnded == players.length-1){
       goOverPlayers(function(player, index){
         if(!player.getFinalPosition()){
-          player.setFinalPosition("Eres el burro");
+          player.setFinalPosition("Eres el burro!");
           player.sendPosition();
           response = true;
           return 'break';
         }
       });
+      currentState = GAME_STATES.ENDED;
     }
     return response;
   };
@@ -290,6 +313,23 @@ var Game = function(_gameId){
     return response;
   };
 
+  var _emitToOthers = function(emiterId, eventName, eventParams){
+    goOverPlayers(function(player, index){
+      if(player.getId() != emiterId && player.getIsBot() == false){
+        (player.getSocket()).emit(eventName, eventParams);
+      }
+      return 'continue';
+    });
+  };
+
+  var _getCorrectAnswer = function(){
+    for (var i = 0; i < currentQuestion.options.length; i++) {
+      if(currentQuestion.options[i] == currentQuestion.response){
+        return i+1;
+      }
+    };
+  };
+
   return {
     addPlayer: _addPlayer,
     disconnectPlayer: _disconnectPlayer,
@@ -301,7 +341,10 @@ var Game = function(_gameId){
     getPodiumPositionText: _getPodiumPositionText,
     verifyGameEnded: _verifyGameEnded,
     canHostPlayer: _canHostPlayer,
-    verifyNameAvailability: _verifyNameAvailability
+    verifyNameAvailability: _verifyNameAvailability,
+    emitToOthers: _emitToOthers,
+    playerReady: _playerReady,
+    getCorrectAnswer: _getCorrectAnswer
   };
 
 };
