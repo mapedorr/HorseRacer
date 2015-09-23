@@ -33,7 +33,7 @@ HorseRacer.Preloader.prototype.preload = function(){
   this.load.image('race_track', 'assets/images/race_track.png');
   this.load.image('horseAmateur', 'assets/images/AmateurRacer32x32.png');
   this.load.image('horseRocky', 'assets/images/RockyRacer32x32.png');
-  this.load.image('horseYegua', 'assets/images/horse03.png');
+  this.load.image('horseYegua', 'assets/images/YeguaRacer32x32.png');
   this.load.image('horseViejo', 'assets/images/ViejoRacer32x32.png');
   this.load.spritesheet('runButton','assets/sprites/run_button.png', 400, 128);
 };
