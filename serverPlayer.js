@@ -30,7 +30,7 @@ var Player = function(playerId, playerName, playerSocket, hostGame) {
     setTimeout(function(){
       var r = Utils.getRandomInt(1, 4);
       var proba = Math.random();
-      if(proba <= 0.8){
+      if(proba <= 0.55){
         // pick the correct answer
         r = hostGame.getCorrectAnswer();
       }
